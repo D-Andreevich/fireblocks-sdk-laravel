@@ -1,6 +1,6 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Types;
+namespace FireblocksSdkLaravel\Types;
 
 class TransactionDestination
 {

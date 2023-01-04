@@ -1,6 +1,6 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Types\Enums;
+namespace FireblocksSdkLaravel\Types\Enums;
 
 class SigningAlgorithmEnums extends EnumCustom
 {

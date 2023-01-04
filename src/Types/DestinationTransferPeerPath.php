@@ -1,8 +1,8 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Types;
+namespace FireblocksSdkLaravel\Types;
 
-use DAndreevich\FireblocksSdkLaravel\Types\Enums\PeerEnums;
+use FireblocksSdkLaravel\Types\Enums\PeerEnums;
 
 class DestinationTransferPeerPath extends TransferPeerPath
 {

@@ -18,19 +18,20 @@
     "extra": {
         "laravel": {
             "providers": [
-                "DAndreevich\\FireblocksSdkLaravel\\FireblocksServiceProvider"
+                "FireblocksSdkLaravel\\FireblocksServiceProvider"
             ],
             "aliases": {
-                "FireblocksSDK": "DAndreevich\\FireblocksSdkLaravel\\Facades\\Fireblocks"
+                "FireblocksSDK": "FireblocksSdkLaravel\\Facades\\Fireblocks"
             }
         }
     },
     "require": {
-        "php": "^7.2|^8.0"
+        "php": "^7.1 || ^8.0"
     },
     "autoload": {
         "psr-4": {
-            "DAndreevich\\FireblocksSdkLaravel\\": "src/"
+            "FireblocksSdkLaravel\\": "src"
+
         }
     },
     "require-dev": {

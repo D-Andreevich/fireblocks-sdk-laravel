@@ -1,8 +1,8 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Facades;
+namespace FireblocksSdkLaravel\Facades;
 
-use DAndreevich\FireblocksSdkLaravel\FireblocksSDK;
+use FireblocksSdkLaravel\FireblocksSdkClient;
 use Illuminate\Support\Facades\Facade;
 
 class Fireblocks extends Facade
@@ -14,6 +14,6 @@ class Fireblocks extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return FireblocksSDK::class;
+        return FireblocksSdkClient::class;
     }
 }

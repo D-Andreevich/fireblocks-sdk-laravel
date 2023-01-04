@@ -1,8 +1,8 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Types;
+namespace FireblocksSdkLaravel\Types;
 
-use DAndreevich\FireblocksSdkLaravel\Types\Enums\TransactionEnums;
+use FireblocksSdkLaravel\Types\Enums\TransactionEnums;
 
 class TransferTicketTerm
 {

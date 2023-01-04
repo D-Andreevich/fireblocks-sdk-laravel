@@ -1,9 +1,9 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Types;
+namespace FireblocksSdkLaravel\Types;
 
-use DAndreevich\FireblocksSdkLaravel\Exceptions\FireblocksApiException;
-use DAndreevich\FireblocksSdkLaravel\Types\Enums\SigningAlgorithmEnums;
+use FireblocksSdkLaravel\Exceptions\FireblocksApiException;
+use FireblocksSdkLaravel\Types\Enums\SigningAlgorithmEnums;
 
 class RawMessage
 {

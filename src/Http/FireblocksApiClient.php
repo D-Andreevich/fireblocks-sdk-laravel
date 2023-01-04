@@ -1,8 +1,8 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel\Http;
+namespace FireblocksSdkLaravel\Http;
 
-use DAndreevich\FireblocksSdkLaravel\Exceptions\FireblocksApiException;
+use FireblocksSdkLaravel\Exceptions\FireblocksApiException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 

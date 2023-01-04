@@ -1,6 +1,6 @@
 <?php
 
-namespace DAndreevich\FireblocksSdkLaravel;
+namespace FireblocksSdkLaravel;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -30,7 +30,7 @@ class FireblocksServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__.'/../config/fireblocks.php', 'fireblocks'
         );
-        $this->app->bind(FireblocksSDK::class);
+        $this->app->bind(FireblocksSdkClient::class);
 
     }
 }

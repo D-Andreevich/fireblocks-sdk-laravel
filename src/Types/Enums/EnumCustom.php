@@ -1,5 +1,5 @@
 <?php
-namespace DAndreevich\FireblocksSdkLaravel\Types\Enums;
+namespace FireblocksSdkLaravel\Types\Enums;
 
 
 abstract class EnumCustom
