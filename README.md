@@ -44,7 +44,7 @@ FIREBLOCKS_TIMEOUT=10
 ### Before You Begin
 Make sure you have the credentials for Fireblocks API Services. Otherwise, please contact Fireblocks support for further instructions on how to obtain your API credentials.
 
-###Start
+### Start
 Once you have retrieved a component, please refer to the [documentation of the Fireblocks](https://docs.fireblocks.com/api/?python#introduction)
 for further information on how to use it.
 
