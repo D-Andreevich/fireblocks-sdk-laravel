@@ -1,0 +1,39 @@
+{
+    "name": "d-andreevich/fireblocks-sdk-laravel",
+    "description": "Laravel SDK for Fireblocks API.",
+    "keywords": ["laravel", "Fireblocks", "fireblocks-sdk"],
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://github.com/D-Andreevich/fireblocks-sdk-laravel/issues",
+        "source": "https://github.com/D-Andreevich/fireblocks-sdk-laravel"
+    },
+    "authors": [
+        {
+            "name": "D-Andreevich",
+            "email": "daniilshvorak@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "FireblocksSDK\\FireblocksServiceProvider"
+            ],
+            "aliases": {
+                "FireblocksSDK": "FireblocksSDK\\Facades\\Fireblocks"
+            }
+        }
+    },
+    "require": {
+        "php": "^7.2|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "FireblocksSdk\\": "src/"
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^4.0|^5.0|^6.0|^7.0"
+    }
+}
