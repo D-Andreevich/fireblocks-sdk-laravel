@@ -16,7 +16,7 @@ class FireblocksServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/fireblocks.php' => config_path('fireblocks.php'),
-            ], 'fireblocks-config');
+            ], 'config');
         }
     }
 
