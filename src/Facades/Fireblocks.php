@@ -1,8 +1,8 @@
 <?php
 
-namespace FireblocksSDK\Facades;
+namespace DAndreevich\FireblocksSdkLaravel\Facades;
 
-use FireblocksSDK\FireblocksSDK;
+use DAndreevich\FireblocksSdkLaravel\FireblocksSDK;
 use Illuminate\Support\Facades\Facade;
 
 class Fireblocks extends Facade

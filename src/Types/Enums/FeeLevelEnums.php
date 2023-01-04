@@ -1,6 +1,6 @@
 <?php
 
-namespace FireblocksSDK\Types\Enums;
+namespace DAndreevich\FireblocksSdkLaravel\Types\Enums;
 
 class FeeLevelEnums extends EnumCustom
 {

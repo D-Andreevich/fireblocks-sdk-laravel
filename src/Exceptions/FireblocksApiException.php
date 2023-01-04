@@ -1,6 +1,6 @@
 <?php
 
-namespace FireblocksSDK\Exceptions;
+namespace DAndreevich\FireblocksSdkLaravel\Exceptions;
 
 use Exception;
 

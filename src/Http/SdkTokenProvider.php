@@ -1,6 +1,6 @@
 <?php
 
-namespace FireblocksSDK\Http;
+namespace DAndreevich\FireblocksSdkLaravel\Http;
 
 
 

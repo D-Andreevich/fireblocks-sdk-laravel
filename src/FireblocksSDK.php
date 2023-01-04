@@ -1,21 +1,21 @@
 <?php
 
-namespace FireblocksSDK;
+namespace DAndreevich\FireblocksSdkLaravel;
 
 
-use FireblocksSDK\Exceptions\FireblocksApiException;
-use FireblocksSDK\Http\FireblocksApiClient;
-use FireblocksSDK\Types\DestinationTransferPeerPath;
-use FireblocksSDK\Types\Enums\FeeLevelEnums;
-use FireblocksSDK\Types\Enums\PeerEnums;
-use FireblocksSDK\Types\Enums\SigningAlgorithmEnums;
-use FireblocksSDK\Types\Enums\TransactionEnums;
-use FireblocksSDK\Types\Enums\TransactionStatusEnums;
-use FireblocksSDK\Types\PagedVaultAccountsRequestFilters;
-use FireblocksSDK\Types\RawMessage;
-use FireblocksSDK\Types\TransactionDestination;
-use FireblocksSDK\Types\TransferPeerPath;
-use FireblocksSDK\Types\TransferTicketTerm;
+use DAndreevich\FireblocksSdkLaravel\Exceptions\FireblocksApiException;
+use DAndreevich\FireblocksSdkLaravel\Http\FireblocksApiClient;
+use DAndreevich\FireblocksSdkLaravel\Types\DestinationTransferPeerPath;
+use DAndreevich\FireblocksSdkLaravel\Types\Enums\FeeLevelEnums;
+use DAndreevich\FireblocksSdkLaravel\Types\Enums\PeerEnums;
+use DAndreevich\FireblocksSdkLaravel\Types\Enums\SigningAlgorithmEnums;
+use DAndreevich\FireblocksSdkLaravel\Types\Enums\TransactionEnums;
+use DAndreevich\FireblocksSdkLaravel\Types\Enums\TransactionStatusEnums;
+use DAndreevich\FireblocksSdkLaravel\Types\PagedVaultAccountsRequestFilters;
+use DAndreevich\FireblocksSdkLaravel\Types\RawMessage;
+use DAndreevich\FireblocksSdkLaravel\Types\TransactionDestination;
+use DAndreevich\FireblocksSdkLaravel\Types\TransferPeerPath;
+use DAndreevich\FireblocksSdkLaravel\Types\TransferTicketTerm;
 
 class FireblocksSDK
 {

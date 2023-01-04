@@ -1,8 +1,7 @@
 <?php
 
-namespace FireblocksSDK;
+namespace DAndreevich\FireblocksSdkLaravel;
 
-use FireblocksSDK\Facades\Fireblocks;
 use Illuminate\Support\ServiceProvider;
 
 class FireblocksServiceProvider extends ServiceProvider
