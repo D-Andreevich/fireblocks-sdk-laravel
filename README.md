@@ -35,7 +35,7 @@ php artisan vendor:publish --provider="FireblocksSdkLaravel\FireblocksServicePro
 You can set the default configuration in your .env file of you Laravel project.
 
 ```text
-FIREBLOCKS_PRIVATE_KEY_PATH=./file_key.crt
+FIREBLOCKS_PRIVATE_KEY_PATH=path/file_name.key
 FIREBLOCKS_API_KEY=api_key
 FIREBLOCKS_API_BASE_URL=https://api.fireblocks.io
 FIREBLOCKS_TIMEOUT=10
