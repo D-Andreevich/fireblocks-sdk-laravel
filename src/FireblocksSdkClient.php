@@ -85,6 +85,16 @@ class FireblocksSdkClient
         return $this->apiClient->get_request("/v1/nfts/ownership/tokens", false, $params);
     }
 
+    /**
+     * Gets a list of owned NFT tokens
+     * @param string $blockchain_descriptor The blockchain descriptor (based on legacy asset)
+     * @param string $vault_account_id The vault account ID
+     * @param array|null $ids List of token ids to fetch
+     * @param string $page_cursor
+     * @param int $page_size
+     * @return array|mixed|null
+     * @throws FireblocksApiException
+     */
     public function get_owned_nfts(string $blockchain_descriptor, string $vault_account_id, array $ids = null,
                                    string $page_cursor = '', int $page_size = 100)
     {
@@ -180,7 +190,7 @@ class FireblocksSdkClient
      */
     public function get_vault_account_asset(string $vault_account_id, string $asset_id)
     {
-        return $this->apiClient->get_request("/v1/vault/accounts/{vault_account_id}/{$asset_id}");
+        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}");
     }
 
     /**
@@ -947,7 +957,7 @@ class FireblocksSdkClient
      */
     public function set_vault_account_customer_ref_id_for_address(string $vault_account_id, string $asset_id, string $address, string $customer_ref_id = null, $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{vault_account_id}/{$asset_id}/addresses/{$address}/set_customer_ref_id", ["customerRefId" => $customer_ref_id ?? ''], $idempotency_key);
+        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses/{$address}/set_customer_ref_id", ["customerRefId" => $customer_ref_id ?? ''], $idempotency_key);
     }
 
     /**
@@ -973,7 +983,7 @@ class FireblocksSdkClient
      */
     public function create_contract_wallet_asset(string $wallet_id, string $assetId, string $address, string $tag = null, string $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/contracts/{wallet_id}/{assetId}", ["address" => $address, "tag" => $tag], $idempotency_key);
+        return $this->apiClient->post_request("/v1/contracts/{$wallet_id}/{$assetId}", ["address" => $address, "tag" => $tag], $idempotency_key);
     }
 
     /**
@@ -1341,7 +1351,7 @@ class FireblocksSdkClient
         $url = "/v1/gas_station";
 
         if ($asset_id)
-            $url .= "/{asset_id}";
+            $url .= "/{$asset_id}";
 
         return $this->apiClient->get_request($url);
     }
@@ -1359,7 +1369,7 @@ class FireblocksSdkClient
         $url = "/v1/gas_station/configuration";
 
         if ($asset_id)
-            $url .= "/{asset_id}";
+            $url .= "/{$asset_id}";
 
         $body = [
             "gasThreshold" => $gas_threshold,
