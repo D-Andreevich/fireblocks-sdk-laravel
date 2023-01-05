@@ -35,7 +35,7 @@ php artisan vendor:publish --provider="FireblocksSdkLaravel\FireblocksServicePro
 You can set the default configuration in your .env file of you Laravel project.
 
 ```text
-FIREBLOCKS_PRIVATE_KEY_PATH=./file_key.crt
+FIREBLOCKS_PRIVATE_KEY_PATH=path/file_name.key
 FIREBLOCKS_API_KEY=api_key
 FIREBLOCKS_API_BASE_URL=https://api.fireblocks.io
 FIREBLOCKS_TIMEOUT=10
@@ -44,7 +44,7 @@ FIREBLOCKS_TIMEOUT=10
 ### Before You Begin
 Make sure you have the credentials for Fireblocks API Services. Otherwise, please contact Fireblocks support for further instructions on how to obtain your API credentials.
 
-###Start
+### Start
 Once you have retrieved a component, please refer to the [documentation of the Fireblocks](https://docs.fireblocks.com/api/?python#introduction)
 for further information on how to use it.
 
