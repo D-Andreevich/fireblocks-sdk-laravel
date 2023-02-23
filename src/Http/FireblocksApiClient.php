@@ -16,9 +16,9 @@ class FireblocksApiClient
      */
     public function __construct($private_key, string $api_key, string $api_base_url, int $timeout)
     {
-        $this->timeout        = $timeout;
-        $this->api_key        = $api_key;
-        $this->base_url       = $api_base_url;
+        $this->timeout       = $timeout;
+        $this->api_key       = $api_key;
+        $this->base_url      = $api_base_url;
         $this->tokenProvider = new SdkTokenProvider($private_key, $api_key);
     }
 
@@ -31,8 +31,8 @@ class FireblocksApiClient
      */
     public function get_request(string $path, $page_mode = False, array $query_params = null)
     {
-        if ($query_params){
-            $path = $path . "?" .  http_build_query($query_params);
+        if ($query_params) {
+            $path = $path . "?" . http_build_query($query_params);
         }
 
         $token = $this->tokenProvider->signJwt($path);
@@ -42,70 +42,8 @@ class FireblocksApiClient
             "Authorization" => "Bearer {$token}",
         ];
 
-        $response = Http::timeout($this->timeout)->withHeaders($headers)->get($this->base_url.$path);
+        $response = Http::timeout($this->timeout)->withHeaders($headers)->get($this->base_url . $path);
         return $this->handle_response($response, $page_mode);
-    }
-
-    /**
-     * @param string $path
-     * @param $page_mode
-     * @param array|null $query_params
-     * @return array|mixed|null
-     * @throws FireblocksApiException
-     */
-    public function delete_request(string $path)
-    {
-        $token = $this->tokenProvider->signJwt($path);
-
-        $headers = [
-            "X-API-Key"     => $this->api_key,
-            "Authorization" => "Bearer {$token}",
-        ];
-
-        $response = Http::timeout($this->timeout)->withHeaders($headers)->delete($this->base_url.$path);
-        return $this->handle_response($response);
-    }
-
-    public function post_request(string $path, array $body=[], $idempotency_key=null){
-        $token = $this->tokenProvider->signJwt($path, $body);
-        if (!$idempotency_key) {
-            $headers = [
-                "X-API-Key"     => $this->api_key,
-                "Authorization" => "Bearer {$token}",
-            ];
-        }else{
-            $headers = [
-                "X-API-Key" => $this->api_key,
-                "Authorization" => "Bearer {$token}",
-                "Idempotency-Key" => $idempotency_key
-            ];
-        }
-
-        $response = Http::timeout($this->timeout)->withHeaders($headers)->post($this->base_url . $path, $body);
-        return $this->handle_response($response);
-    }
-
-    public function put_request(string $path, array $body=[]){
-        $token = $this->tokenProvider->signJwt($path, $body);
-        $headers = [
-            "X-API-Key" => $this->api_key,
-            "Authorization" => "Bearer {$token}",
-            "Content-Type" => "application/json",
-        ];
-
-        $response = Http::timeout($this->timeout)->withHeaders($headers)->put($this->base_url . $path, $body);
-        return $this->handle_response($response);
-    }
-    public function patch_request(string $path, array $body=[]){
-        $token = $this->tokenProvider->signJwt($path, $body);
-        $headers = [
-            "X-API-Key" => $this->api_key,
-            "Authorization" => "Bearer {$token}",
-            "Content-Type" => "application/json",
-        ];
-
-        $response = Http::timeout($this->timeout)->withHeaders($headers)->patch($this->base_url . $path, $body);
-        return $this->handle_response($response);
     }
 
     private function handle_response(Response $response, $page_mode = False)
@@ -136,5 +74,71 @@ class FireblocksApiClient
             }
             return $response_data;
         }
+    }
+
+    /**
+     * @param string $path
+     * @param $page_mode
+     * @param array|null $query_params
+     * @return array|mixed|null
+     * @throws FireblocksApiException
+     */
+    public function delete_request(string $path)
+    {
+        $token = $this->tokenProvider->signJwt($path);
+
+        $headers = [
+            "X-API-Key"     => $this->api_key,
+            "Authorization" => "Bearer {$token}",
+        ];
+
+        $response = Http::timeout($this->timeout)->withHeaders($headers)->delete($this->base_url . $path);
+        return $this->handle_response($response);
+    }
+
+    public function post_request(string $path, array $body = [], $idempotency_key = null)
+    {
+        $token = $this->tokenProvider->signJwt($path, $body);
+        if (!$idempotency_key) {
+            $headers = [
+                "X-API-Key"     => $this->api_key,
+                "Authorization" => "Bearer {$token}",
+            ];
+        } else {
+            $headers = [
+                "X-API-Key"       => $this->api_key,
+                "Authorization"   => "Bearer {$token}",
+                "Idempotency-Key" => $idempotency_key
+            ];
+        }
+
+        $response = Http::timeout($this->timeout)->withHeaders($headers)->post($this->base_url . $path, $body);
+        return $this->handle_response($response);
+    }
+
+    public function put_request(string $path, array $body = [])
+    {
+        $token   = $this->tokenProvider->signJwt($path, $body);
+        $headers = [
+            "X-API-Key"     => $this->api_key,
+            "Authorization" => "Bearer {$token}",
+            "Content-Type"  => "application/json",
+        ];
+
+        $response = Http::timeout($this->timeout)->withHeaders($headers)->put($this->base_url . $path, $body);
+        return $this->handle_response($response);
+    }
+
+    public function patch_request(string $path, array $body = [])
+    {
+        $token   = $this->tokenProvider->signJwt($path, $body);
+        $headers = [
+            "X-API-Key"     => $this->api_key,
+            "Authorization" => "Bearer {$token}",
+            "Content-Type"  => "application/json",
+        ];
+
+        $response = Http::timeout($this->timeout)->withHeaders($headers)->patch($this->base_url . $path, $body);
+        return $this->handle_response($response);
     }
 }
