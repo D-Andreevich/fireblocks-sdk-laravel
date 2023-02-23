@@ -39,6 +39,8 @@ FIREBLOCKS_PRIVATE_KEY_PATH=path/file_name.key
 FIREBLOCKS_API_KEY=api_key
 FIREBLOCKS_API_BASE_URL=https://api.fireblocks.io
 FIREBLOCKS_TIMEOUT=10
+FIREBLOCKS_API_PUBLIC_KEY_PATH='path/webhook_sig.pub'
+FIREBLOCKS_X_WEBHOOK_SECRET='secret'
 ```
 ## Usage
 ### Before You Begin
@@ -58,3 +60,25 @@ $result = FireblocksSDK::get_gas_station_info();
 ```
 
 You can use the Python examples from the [documentation of the Fireblocks](https://docs.fireblocks.com/api/?python#introduction), all methods have the same names, all functionality is duplicated from [fireblocks-sdk-py](https://github.com/fireblocks/fireblocks-sdk-py).
+
+
+### WebHook types and middleware
+Also, you can use the event types ```\FireblocksSdkLaravel\Types\WebHook\Events```
+```php
+Route::post('/fireblocks/webhook/events', function (\Illuminate\Http\Request $req) {
+
+    $object = \FireblocksSdkLaravel\Types\WebHook\Events\FactoryEvent::get(...$req->all());
+
+    return response()->json((array)$object);
+})->middleware([\FireblocksSdkLaravel\Http\Middlewares\EventMiddleware::class]);
+```
+or notification type ```\FireblocksSdkLaravel\Types\WebHook\Notifications```
+```php
+Route::post('/fireblocks/webhook/notifications', function (\Illuminate\Http\Request $req) {
+
+    $object = new \FireblocksSdkLaravel\Types\WebHook\Notifications\Notification(...$req->all());
+
+    return response()->json((array)$object);
+})->middleware([\FireblocksSdkLaravel\Http\Middlewares\NotificationMiddleware::class]);
+```
+Please note that you can use middleware ```\FireblocksSdkLaravel\Http\Middlewares``` in your project.

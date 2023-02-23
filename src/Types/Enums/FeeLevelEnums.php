@@ -4,7 +4,7 @@ namespace FireblocksSdkLaravel\Types\Enums;
 
 class FeeLevelEnums extends EnumCustom
 {
-    const HIGH   = "HIGH";
-    const MEDIUM = "MEDIUM";
-    const LOW    = "LOW";
+    const _HIGH   = "HIGH";
+    const _MEDIUM = "MEDIUM";
+    const _LOW    = "LOW";
 }

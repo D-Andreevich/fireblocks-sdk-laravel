@@ -1,4 +1,5 @@
 <?php
+
 namespace FireblocksSdkLaravel\Types\Enums;
 
 
@@ -12,8 +13,11 @@ abstract class EnumCustom
         $this->value = $value;
     }
 
-    final static public function __callStatic($name, $arguments)
+    final static public function __callStatic(string $name, array $arguments)
     {
+        if ($name[0] !== '_') {
+            $name = "_{$name}";
+        }
         return new static(constant(get_called_class() . '::' . $name));
     }
 

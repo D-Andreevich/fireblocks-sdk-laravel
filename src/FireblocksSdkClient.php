@@ -27,7 +27,7 @@ class FireblocksSdkClient
     {
         $config = config('fireblocks');
         if (!file_exists($config['private_key_path'])){
-            throw new FireblocksApiException('File not exists by [private_key_path]');
+            throw new FireblocksApiException('File not exists by [private_key_path], please check config');
         }
         $private_key = file_get_contents($config['private_key_path']);
         $api_key = $config['api_key'];
@@ -538,17 +538,17 @@ class FireblocksSdkClient
      * @param int $before Only gets transactions created before given timestamp (in milliseconds)
      * @param int $after Only gets transactions created after given timestamp (in milliseconds)
      * @param TransactionStatusEnums|null $status Only gets transactions with the specified status, which should one of the following:
-     * TransactionStatusEnums::SUBMITTED(), QUEUED, PENDING_SIGNATURE, PENDING_AUTHORIZATION, PENDING_3RD_PARTY_MANUAL_APPROVAL,
+     * TransactionStatusEnums::_SUBMITTED(), QUEUED, PENDING_SIGNATURE, PENDING_AUTHORIZATION, PENDING_3RD_PARTY_MANUAL_APPROVAL,
      * PENDING_3RD_PARTY, BROADCASTING, CONFIRMING, COMPLETED, PENDING_AML_CHECKUP, PARTIALLY_COMPLETED,
      * CANCELLING, CANCELLED, REJECTED, FAILED, TIMEOUT, BLOCKED
      * @param int|null $limit Limit the amount of returned results. If not specified, a limit of 200 results will be used
      * @param string|null $txhash Only gets transactions with the specified txHash
      * @param string|null $assets Filter results for specified assets
      * @param PeerEnums|null $source_type Only gets transactions with given source_type, which should be one of the following:
-     * PeerEnums::VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
+     * PeerEnums::_VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
      * @param string|null $source_id Only gets transactions with given source_id
      * @param PeerEnums|null $dest_type Only gets transactions with given dest_type, which should be one of the following:
-     * PeerEnums::VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
+     * PeerEnums::_VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
      * @param string|null $dest_id Only gets transactions with given dest_id
      * @param string|null $next_or_previous_path get transactions matching the path, provided from pageDetails
      */
@@ -606,7 +606,7 @@ class FireblocksSdkClient
      * @param int $before Only gets transactions created before given timestamp (in milliseconds)
      * @param int $after Only gets transactions created after given timestamp (in milliseconds)
      * @param TransactionStatusEnums|null $status Only gets transactions with the specified status, which should one of the following:
-     * TransactionStatusEnums::SUBMITTED(), QUEUED, PENDING_SIGNATURE, PENDING_AUTHORIZATION, PENDING_3RD_PARTY_MANUAL_APPROVAL,
+     * TransactionStatusEnums::_SUBMITTED(), QUEUED, PENDING_SIGNATURE, PENDING_AUTHORIZATION, PENDING_3RD_PARTY_MANUAL_APPROVAL,
      * PENDING_3RD_PARTY, BROADCASTING, CONFIRMING, COMPLETED, PENDING_AML_CHECKUP, PARTIALLY_COMPLETED,
      * CANCELLING, CANCELLED, REJECTED, FAILED, TIMEOUT, BLOCKED
      * @param int|null $limit Limit the amount of returned results. If not specified, a limit of 200 results will be used
@@ -617,7 +617,7 @@ class FireblocksSdkClient
      * PeerEnums::VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
      * @param string|null $source_id Only gets transactions with given source_id
      * @param PeerEnums|null $dest_type Only gets transactions with given dest_type, which should be one of the following:
-     * PeerEnums::VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
+     * PeerEnums::_VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
      * @param string|null $dest_id Only gets transactions with given dest_id
      * @return array|mixed|null
      */
@@ -765,7 +765,7 @@ class FireblocksSdkClient
      * @param string $amount The transaction source
      * @param TransferPeerPath $source The transfer destination.
      * @param DestinationTransferPeerPath|TransferPeerPath|null $destination The amount
-     * @param TransactionEnums|null $tx_type Transaction type: either TransactionEnums::TRANSFER(), MINT, BURN, TRANSACTION_SUPPLY_TO_COMPOUND or TRANSACTION_REDEEM_FROM_COMPOUND. Default is TransactionEnums::TRANSFER.
+     * @param TransactionEnums|null $tx_type Transaction type: either TransactionEnums::_TRANSFER(), MINT, BURN, TRANSACTION_SUPPLY_TO_COMPOUND or TRANSACTION_REDEEM_FROM_COMPOUND. Default is TransactionEnums::_TRANSFER.
      * @param string|null $idempotency_key
      * @param array|null $destinations (list of TransactionDestination objects, optional) For UTXO based assets, send to multiple destinations which should be specified using this field.
      * @return array|mixed|null
@@ -774,7 +774,7 @@ class FireblocksSdkClient
                                                  string $idempotency_key = null, array $destinations = null)
     {
         if (is_null($tx_type)) {
-            $tx_type = TransactionEnums::TRANSFER();
+            $tx_type = TransactionEnums::_TRANSFER();
         }
 
         $body = [
@@ -1431,7 +1431,7 @@ class FireblocksSdkClient
             throw new FireblocksApiException("Got invalid signing algorithm type: {$raw_message->algorithm}");
         }
 
-        return $this->create_transaction($asset_id, null,$source, null,null,null,false, TransactionEnums::RAW(),$note,null, null,null,["rawMessageData" => get_object_vars($raw_message)]);
+        return $this->create_transaction($asset_id, null,$source, null,null,null,false, TransactionEnums::_RAW(),$note,null, null,null,["rawMessageData" => get_object_vars($raw_message)]);
     }
 
     /**
@@ -1471,7 +1471,7 @@ class FireblocksSdkClient
                                        string        $external_tx_id = null, bool $treat_as_gross_amount = null, bool $force_sweep = null, int $priority_fee = null)
     {
         if (is_null($tx_type)) {
-            $tx_type = TransactionEnums::TRANSFER();
+            $tx_type = TransactionEnums::_TRANSFER();
         }
 
         $body = [

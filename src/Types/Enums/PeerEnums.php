@@ -4,13 +4,13 @@ namespace FireblocksSdkLaravel\Types\Enums;
 
 class PeerEnums extends EnumCustom
 {
-    const VAULT_ACCOUNT      = "VAULT_ACCOUNT";
-    const EXCHANGE_ACCOUNT   = "EXCHANGE_ACCOUNT";
-    const INTERNAL_WALLET    = "INTERNAL_WALLET";
-    const EXTERNAL_WALLET    = "EXTERNAL_WALLET";
-    const UNKNOWN_PEER       = "UNKNOWN";
-    const FIAT_ACCOUNT       = "FIAT_ACCOUNT";
-    const NETWORK_CONNECTION = "NETWORK_CONNECTION";
-    const COMPOUND           = "COMPOUND";
-    const ONE_TIME_ADDRESS   = "ONE_TIME_ADDRESS";
+    const _VAULT_ACCOUNT      = "VAULT_ACCOUNT";
+    const _EXCHANGE_ACCOUNT   = "EXCHANGE_ACCOUNT";
+    const _INTERNAL_WALLET    = "INTERNAL_WALLET";
+    const _EXTERNAL_WALLET    = "EXTERNAL_WALLET";
+    const _UNKNOWN_PEER       = "UNKNOWN";
+    const _FIAT_ACCOUNT       = "FIAT_ACCOUNT";
+    const _NETWORK_CONNECTION = "NETWORK_CONNECTION";
+    const _COMPOUND           = "COMPOUND";
+    const _ONE_TIME_ADDRESS   = "ONE_TIME_ADDRESS";
 }
