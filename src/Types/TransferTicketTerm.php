@@ -30,4 +30,54 @@ class TransferTicketTerm
             $this->note = $note;
         $this->operation = (string)$operation;
     }
+
+    /**
+     * @return string
+     */
+    public function getAmount(): string
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAsset(): string
+    {
+        return $this->asset;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNetworkConnectionId(): string
+    {
+        return $this->networkConnectionId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNote(): string
+    {
+        return $this->note;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOperation(): string
+    {
+        return $this->operation;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOutgoing(): bool
+    {
+        return $this->outgoing;
+    }
+
+
 }

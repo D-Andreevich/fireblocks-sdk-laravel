@@ -13,4 +13,22 @@ class TransactionDestination
         $this->amount = (string)$amount;
         $this->destination = get_object_vars($destination);
     }
+
+    /**
+     * @return string
+     */
+    public function getAmount(): string
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDestination(): array
+    {
+        return $this->destination;
+    }
+
+
 }

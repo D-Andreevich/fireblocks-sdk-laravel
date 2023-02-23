@@ -23,4 +23,37 @@ class UnsignedMessage
         if ($derivationPath)
             $this->derivationPath = $derivationPath;
     }
+
+    /**
+     * @return float|int|string
+     */
+    public function getBip44addressIndex()
+    {
+        return $this->bip44addressIndex;
+    }
+
+    /**
+     * @return float|int|string
+     */
+    public function getBip44change()
+    {
+        return $this->bip44change;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function getDerivationPath(): array
+    {
+        return $this->derivationPath;
+    }
+
 }

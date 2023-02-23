@@ -18,6 +18,15 @@ class DestinationTransferPeerPath extends TransferPeerPath
         if ($one_time_address != null){
             $this->oneTimeAddress = $one_time_address;
         }
-
     }
+
+    /**
+     * @return mixed
+     */
+    public function getOneTimeAddress()
+    {
+        return $this->oneTimeAddress;
+    }
+
+
 }

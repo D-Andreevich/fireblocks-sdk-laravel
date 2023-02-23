@@ -41,4 +41,70 @@ class PagedVaultAccountsRequestFilters
         }
         return $params;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getAfter(): ?string
+    {
+        return $this->after;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAssetId(): ?string
+    {
+        return $this->assetId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBefore(): ?string
+    {
+        return $this->before;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLimit(): ?int
+    {
+        return $this->limit;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMinAmountThreshold(): ?string
+    {
+        return $this->minAmountThreshold;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNamePrefix(): ?string
+    {
+        return $this->namePrefix;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNameSuffix(): ?string
+    {
+        return $this->nameSuffix;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getOrderBy(): ?string
+    {
+        return $this->orderBy;
+    }
+
+
 }

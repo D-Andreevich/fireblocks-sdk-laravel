@@ -18,4 +18,22 @@ class TransferPeerPath
             $this->id = $peer_id;
         }
     }
+
+    /**
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+
 }

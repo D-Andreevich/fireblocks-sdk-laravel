@@ -28,4 +28,22 @@ class RawMessage
             $this->algorithm = (string)$algorithm;
     }
 
+    /**
+     * @return string
+     */
+    public function getAlgorithm(): string
+    {
+        return $this->algorithm;
+    }
+
+    /**
+     * @return array<UnsignedMessage>
+     */
+    public function getMessages(): array
+    {
+        return $this->messages;
+    }
+
+
+
 }
