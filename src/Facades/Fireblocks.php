@@ -9,7 +9,7 @@ class Fireblocks extends Facade
 {
     /**
      * Get the registered name of the component.
-     *
+     * test release v.1.1.1
      * @return string
      */
     protected static function getFacadeAccessor()
