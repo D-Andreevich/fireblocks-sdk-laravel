@@ -6,9 +6,12 @@ class AuthorizationInfo
 {
     private bool   $allowOperatorAsAuthorizer;    //	Set to "true" if the intiator of the transaction can be one of the approvers.
     private string $logic;                        //	"AND" or "OR", this is the logic that is applied between the different authorization groups listed below.
+    /**
+     * @var AuthorizationGroup[]
+     */
     private array  $groups;                       //List of AuthorizationGroups	The list of authorization groups and users that are required to approve this transaction. The logic applied between the different groups is the “logic” field above. Each element in the response is the user ID (the can found see via the users endpoint) and their ApprovalStatus.
 
-    public function __construct(bool $allowOperatorAsAuthorizer, string $logic, array $groups)
+    public function __construct(bool $allowOperatorAsAuthorizer, string $logic, array $groups = [])
     {
         $this->allowOperatorAsAuthorizer = $allowOperatorAsAuthorizer;
         $this->logic                     = $logic;
@@ -34,7 +37,7 @@ class AuthorizationInfo
     }
 
     /**
-     * @return array<AuthorizationGroup>
+     * @return AuthorizationGroup[]
      */
     public function getGroups(): array
     {

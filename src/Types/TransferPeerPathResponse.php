@@ -7,15 +7,15 @@ use FireblocksSdkLaravel\Types\Enums\PeerEnums;
 class TransferPeerPathResponse
 {
     private PeerEnums $type;    //		[ VAULT_ACCOUNT, EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, ONE_TIME_ADDRESS, NETWORK_CONNECTION, FIAT_ACCOUNT, COMPOUND, UNKNOWN ].
-    private string    $id;      //		The ID of the exchange account to return.
+    private ?string   $id;      //		The ID of the exchange account to return.
     private string    $name;    //		The name of the exchange account.
-    private string    $subType; //		The specific exchange, fiat account or unmanaged wallet (either INTERNAL / EXTERNAL).
+    private ?string   $subType; //		The specific exchange, fiat account or unmanaged wallet (either INTERNAL / EXTERNAL).
 
     public function __construct(
         string $type,
-        string $id,
         string $name,
-        string $subType
+        string $id = null,
+        string $subType = null
     )
     {
         $this->type    = PeerEnums::{$type}();
@@ -35,7 +35,7 @@ class TransferPeerPathResponse
     /**
      * @return string
      */
-    public function getId(): string
+    public function getId(): ?string
     {
         return $this->id;
     }
@@ -51,7 +51,7 @@ class TransferPeerPathResponse
     /**
      * @return string
      */
-    public function getSubType(): string
+    public function getSubType(): ?string
     {
         return $this->subType;
     }
