@@ -4,16 +4,16 @@ namespace FireblocksSdkLaravel\Types;
 
 class AmountInfo
 {
-    private string $amount;              //	If the transfer is a withdrawal from an exchange, the actual amount that was requested to be transferred. Otherwise, it is the requested amount. This value will always be equal to the amount (number) parameter of TransactionDetails.
-    private string $requestedAmount;     //	The amount requested by the user.
-    private string $netAmount;           //	The net amount of the transaction, after fee deduction.
-    private string $amountUSD;           //	The USD value of the requested amount.
+    private string  $amount;              //	If the transfer is a withdrawal from an exchange, the actual amount that was requested to be transferred. Otherwise, it is the requested amount. This value will always be equal to the amount (number) parameter of TransactionDetails.
+    private string  $requestedAmount;     //	The amount requested by the user.
+    private string  $netAmount;           //	The net amount of the transaction, after fee deduction.
+    private ?string $amountUSD;           //	The USD value of the requested amount.
 
     public function __construct(
         string $amount,
         string $requestedAmount,
         string $netAmount,
-        string $amountUSD
+        string $amountUSD = null
     )
     {
         $this->amount          = $amount;
@@ -47,12 +47,14 @@ class AmountInfo
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getAmountUSD(): string
+    public function getAmountUSD(): ?string
     {
         return $this->amountUSD;
     }
+
+
 
 
 }
