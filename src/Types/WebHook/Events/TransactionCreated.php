@@ -4,7 +4,7 @@ namespace FireblocksSdkLaravel\Types\WebHook\Events;
 
 
 use FireblocksSdkLaravel\Types\Enums\EventTypesEnums;
-use FireblocksSdkLaravel\Types\WebHook\Events\DataObjects\TransactionDetails;
+use FireblocksSdkLaravel\Types\Response\Transactions\TransactionDetails;
 
 class TransactionCreated extends BaseEvent
 {
@@ -14,7 +14,7 @@ class TransactionCreated extends BaseEvent
     }
 
     /**
-     * @return EventData<TransactionDetails>
+     * @return TransactionDetails
      */
     public function getData(): TransactionDetails
     {

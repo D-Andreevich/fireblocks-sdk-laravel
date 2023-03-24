@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationMiddleware
 {
+    /**
+     * @throws FireblocksApiException
+     */
     public function handle($request, Closure $next)
     {
         if ($this->jwt_is_valid($request)) {
@@ -20,6 +23,9 @@ class NotificationMiddleware
         return response()->json(['message' => 'Invalid Secret'], 403);
     }
 
+    /**
+     * @throws FireblocksApiException
+     */
     protected function jwt_is_valid(Request $request): bool
     {
         $jwt    = $request->header("X-Webhook-Secret");

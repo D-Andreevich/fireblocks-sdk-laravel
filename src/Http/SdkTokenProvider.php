@@ -17,7 +17,7 @@ class SdkTokenProvider
         $this->api_key     = $api_key;
     }
 
-    public function signJwt(string $path, array $body_json = null)
+    public function signJwt(string $path, array $body_json = null): string
     {
         $timestamp_secs = time();
         $nonce          = (int)gmp_random_bits(63);

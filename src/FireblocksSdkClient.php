@@ -7,16 +7,37 @@ use FireblocksSdkLaravel\Exceptions\FireblocksApiException;
 use FireblocksSdkLaravel\Http\FireblocksApiClient;
 use FireblocksSdkLaravel\Types\DestinationTransferPeerPath;
 use FireblocksSdkLaravel\Types\Enums\FeeLevelEnums;
-use FireblocksSdkLaravel\Types\Enums\PeerEnums;
 use FireblocksSdkLaravel\Types\Enums\SigningAlgorithmEnums;
 use FireblocksSdkLaravel\Types\Enums\TransactionEnums;
-use FireblocksSdkLaravel\Types\Enums\TransactionStatusEnums;
-use FireblocksSdkLaravel\Types\PagedVaultAccountsRequestFilters;
-use FireblocksSdkLaravel\Types\RawMessage;
+use FireblocksSdkLaravel\Types\Request\Transactions\CreateRawTransactionParameters;
+use FireblocksSdkLaravel\Types\Request\Transactions\CreateTransactionParameters;
+use FireblocksSdkLaravel\Types\Request\Transactions\ListTransactionsParameters;
+use FireblocksSdkLaravel\Types\Request\Vault\PagedVaultAccountsRequestFilters;
+use FireblocksSdkLaravel\Types\Response\SupportedAssets\AssetTypeResponseList;
+use FireblocksSdkLaravel\Types\Response\Transactions\AddressStatus;
+use FireblocksSdkLaravel\Types\Response\Transactions\CreateTransactionResponse;
+use FireblocksSdkLaravel\Types\Response\Transactions\NetworkFee;
+use FireblocksSdkLaravel\Types\Response\Transactions\SetConfirmationsThresholdResponse;
+use FireblocksSdkLaravel\Types\Response\Transactions\TransactionDetails;
+use FireblocksSdkLaravel\Types\Response\Transactions\TransactionDetailsList;
+use FireblocksSdkLaravel\Types\Response\Transactions\TransactionDetailsPagedResponse;
+use FireblocksSdkLaravel\Types\Response\Vault\CreateAddressResponse;
+use FireblocksSdkLaravel\Types\Response\Vault\CreateVaultAssetResponse;
+use FireblocksSdkLaravel\Types\Response\Vault\PublicKey;
+use FireblocksSdkLaravel\Types\Response\Vault\UnspentInputsDataList;
+use FireblocksSdkLaravel\Types\Response\Vault\VaultAccountAssetAddressList;
+use FireblocksSdkLaravel\Types\Response\Vault\VaultAccountList;
+use FireblocksSdkLaravel\Types\Response\Vault\VaultAccountsPagedResponse;
+use FireblocksSdkLaravel\Types\Response\Vault\VaultAsset;
+use FireblocksSdkLaravel\Types\Response\Vault\VaultAssetList;
 use FireblocksSdkLaravel\Types\TransactionDestination;
 use FireblocksSdkLaravel\Types\TransferPeerPath;
 use FireblocksSdkLaravel\Types\TransferTicketTerm;
+use FireblocksSdkLaravel\Types\WebHook\Events\DataObjects\VaultAccount;
 
+/**
+ *
+ */
 class FireblocksSdkClient
 {
     /**
@@ -26,7 +47,7 @@ class FireblocksSdkClient
     public function __construct()
     {
         $config = config('fireblocks');
-        if (!file_exists($config['private_key_path'])){
+        if (!file_exists($config['private_key_path'])) {
             throw new FireblocksApiException('File not exists by [private_key_path], please check config');
         }
         $private_key = file_get_contents($config['private_key_path']);
@@ -36,13 +57,24 @@ class FireblocksSdkClient
         $this->apiClient = new FireblocksApiClient($private_key, $api_key, $api_base_url, $timeout);
     }
 
-    public function get_nft(string $id)
+    /**
+     * @param string $id
+     * @return Types\Response\Base\ResponseData
+     */
+    public function get_nft(string $id): Types\Response\Base\ResponseData
     {
         return $this->apiClient->get_request("/v1/nfts/tokens/" . $id);
     }
 
 
-    public function get_nfts(array $ids, string $page_cursor = '', int $page_size = 100)
+    /**
+     * @param array $ids
+     * @param string $page_cursor
+     * @param int $page_size
+     * @return Types\Response\Base\ResponseData
+     * @throws FireblocksApiException
+     */
+    public function get_nfts(array $ids, string $page_cursor = '', int $page_size = 100): Types\Response\Base\ResponseData
     {
         /**
          *     $ids    Example list: "1,2,3,4"
@@ -63,16 +95,25 @@ class FireblocksSdkClient
             $params['pageSize'] = $page_size;
         }
 
-        return $this->apiClient->get_request("/v1/nfts/tokens", false, $params);
+        return $this->apiClient->get_request("/v1/nfts/tokens", $params);
 
     }
 
-    public function refresh_nft_metadata(string $id)
+    /**
+     * @param string $id
+     * @return Types\Response\Base\ResponseData
+     */
+    public function refresh_nft_metadata(string $id): Types\Response\Base\ResponseData
     {
         return $this->apiClient->put_request("/v1/nfts/tokens/" . $id);
     }
 
-    public function refresh_nft_ownership_by_vault(string $blockchain_descriptor, string $vault_account_id)
+    /**
+     * @param string $blockchain_descriptor
+     * @param string $vault_account_id
+     * @return Types\Response\Base\ResponseData
+     */
+    public function refresh_nft_ownership_by_vault(string $blockchain_descriptor, string $vault_account_id): Types\Response\Base\ResponseData
     {
         $params = [];
         if ($blockchain_descriptor) {
@@ -82,7 +123,7 @@ class FireblocksSdkClient
             $params['vaultAccountId'] = $vault_account_id;
         }
 
-        return $this->apiClient->get_request("/v1/nfts/ownership/tokens", false, $params);
+        return $this->apiClient->get_request("/v1/nfts/ownership/tokens", $params);
     }
 
     /**
@@ -92,7 +133,7 @@ class FireblocksSdkClient
      * @param array|null $ids List of token ids to fetch
      * @param string $page_cursor
      * @param int $page_size
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_owned_nfts(string $blockchain_descriptor, string $vault_account_id, array $ids = null,
@@ -117,16 +158,17 @@ class FireblocksSdkClient
             $params['pageSize'] = $page_size;
         }
 
-        return $this->apiClient->get_request("/v1/nfts/ownership/tokens", false, $params);
+        return $this->apiClient->get_request("/v1/nfts/ownership/tokens", $params);
     }
 
     /**
      * Gets all assets that are currently supported by Fireblocks
-     *
+     ** @return AssetTypeResponseList
      */
-    public function get_supported_assets()
+    public function get_supported_assets(): AssetTypeResponseList
     {
-        return $this->apiClient->get_request("/v1/supported_assets");
+        $responseData = $this->apiClient->get_request("/v1/supported_assets");
+        return new AssetTypeResponseList($responseData->getData());
     }
 
     /**
@@ -135,9 +177,9 @@ class FireblocksSdkClient
      * @param string|null $name_suffix Vault account name suffix
      * @param int|null $min_amount_threshold The minimum amount for asset to have in order to be included in the results
      * @param string|null $assetId The asset symbol
-     * @return mixed
+     * @return VaultAccountList
      */
-    public function get_vault_accounts(string $name_prefix = null, string $name_suffix = null, int $min_amount_threshold = null, string $assetId = null)
+    public function get_vault_accounts(string $name_prefix = null, string $name_suffix = null, int $min_amount_threshold = null, string $assetId = null): VaultAccountList
     {
         $params = [];
 
@@ -157,40 +199,44 @@ class FireblocksSdkClient
             $params['assetId'] = $assetId;
         }
 
-        return $this->apiClient->get_request("/v1/vault/accounts", false, $params);
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts", $params);
+        return new VaultAccountList($responseData->getData());
     }
 
     /**
      * Gets a page of vault accounts for your tenant according to filters given
      * @param PagedVaultAccountsRequestFilters $paged_vault_accounts_request_filters Possible filters to apply for request
-     * @return mixed
+     * @return VaultAccountsPagedResponse
      */
-    public function get_vault_accounts_with_page_info(PagedVaultAccountsRequestFilters $paged_vault_accounts_request_filters)
+    public function get_vault_accounts_with_page_info(PagedVaultAccountsRequestFilters $paged_vault_accounts_request_filters): VaultAccountsPagedResponse
     {
-        $params = $paged_vault_accounts_request_filters->getParams();
+        $params = $paged_vault_accounts_request_filters->toArray();
 
-        return $this->apiClient->get_request("/v1/vault/accounts_paged", false, $params);
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts_paged", $params);
+        return new VaultAccountsPagedResponse(...$responseData->getData());
     }
 
     /**
      * Gets a single vault account
      * @param string $vault_account_id The id of the requested account
-     * @return mixed
+     * @return VaultAccount
      */
-    public function get_vault_account_by_id(string $vault_account_id)
+    public function get_vault_account(string $vault_account_id): VaultAccount
     {
-        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}");
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}");
+        return new VaultAccount(...$responseData->getData());
     }
 
     /**
      * Gets a single vault account asset
      * @param string $vault_account_id The id of the requested account
      * @param string $asset_id The symbol of the requested asset (e.g BTC, ETH)
-     * @return mixed
+     * @return VaultAsset
      */
-    public function get_vault_account_asset(string $vault_account_id, string $asset_id)
+    public function get_vault_account_asset(string $vault_account_id, string $asset_id): VaultAsset
     {
-        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}");
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}");
+        return new VaultAsset(...$responseData->getData());
     }
 
     /**
@@ -198,33 +244,36 @@ class FireblocksSdkClient
      * @param string $vault_account_id The id of the requested account
      * @param string $asset_id The symbol of the requested asset (e.g BTC, ETH)
      * @param string|null $idempotency_key
-     * @return mixed
+     * @return VaultAsset
      */
-    public function refresh_vault_asset_balance(string $vault_account_id, string $asset_id, string $idempotency_key = null)
+    public function refresh_vault_asset_balance(string $vault_account_id, string $asset_id, string $idempotency_key = null): VaultAsset
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/balance", [], $idempotency_key);
+        $responseData = $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/balance", [], $idempotency_key);
+        return new VaultAsset(...$responseData->getData());
     }
 
     /**
      * Gets deposit addresses for an asset in a vault account
      * @param string $vault_account_id The id of the requested account
      * @param string $asset_id The symbol of the requested asset (e.g BTC, ETH)
-     * @return mixed
+     * @return VaultAccountAssetAddressList
      */
-    public function get_deposit_addresses(string $vault_account_id, string $asset_id)
+    public function get_deposit_addresses(string $vault_account_id, string $asset_id): VaultAccountAssetAddressList
     {
-        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses");
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses");
+        return new VaultAccountAssetAddressList($responseData->getData());
     }
 
     /**
      * Gets utxo list for an asset in a vault account
      * @param string $vault_account_id The id of the requested account
      * @param string $asset_id The symbol of the requested asset (like BTC, DASH and utxo based assets)
-     * @return mixed
+     * @return UnspentInputsDataList
      */
-    public function get_unspent_inputs(string $vault_account_id, string $asset_id)
+    public function get_unspent_inputs(string $vault_account_id, string $asset_id): UnspentInputsDataList
     {
-        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/unspent_inputs");
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/unspent_inputs");
+        return new UnspentInputsDataList($responseData->getData());
     }
 
     /**
@@ -234,15 +283,16 @@ class FireblocksSdkClient
      * @param string|null $description A description for the new address
      * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
      * @param string|null $idempotency_key
-     * @return mixed
+     * @return CreateAddressResponse
      */
-    public function generate_new_address(string $vault_account_id, string $asset_id, string $description = null, string $customer_ref_id = null, string $idempotency_key = null)
+    public function generate_new_address(string $vault_account_id, string $asset_id, string $description = null, string $customer_ref_id = null, string $idempotency_key = null): CreateAddressResponse
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses",
+        $responseData = $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses",
             [
                 "description" => $description ?? '', "customerRefId" => $customer_ref_id ?? ''
             ],
             $idempotency_key);
+        return new CreateAddressResponse(...$responseData->getData());
     }
 
     /**
@@ -256,22 +306,21 @@ class FireblocksSdkClient
      */
     public function set_address_description(string $vault_account_id, string $asset_id, string $address, string $tag = null, string $description = null)
     {
+        $path = "/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses/{$address}";
         if ($tag) {
-            return $this->apiClient->put_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses/{$address}:{$tag}",
-                [
-                    "description" => $description ?? ''
-                ]);
+            $path = "{$path}:{$tag}";
         }
-        return $this->apiClient->put_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses/{$address}",
+
+        return $this->apiClient->put_request($path,
             [
                 "description" => $description ?? ''
-            ]);
+            ])->getData();
 
     }
 
     /**
      * Gets all network connections for your tenant
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
     public function get_network_connections()
     {
@@ -284,14 +333,14 @@ class FireblocksSdkClient
      * @param string $remote_network_id The remote network profile's id
      * @param array $routing_policy The desired routing policy for the connection
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function create_network_connection(string $local_network_id, string $remote_network_id, array $routing_policy = [], string $idempotency_key = null)
     {
         $body = [
-            "localNetworkId"  => $local_network_id,
+            "localNetworkId" => $local_network_id,
             "remoteNetworkId" => $remote_network_id,
-            "routingPolicy"   => $routing_policy
+            "routingPolicy" => $routing_policy
         ];
 
         return $this->apiClient->post_request("/v1/network_connections", $body, $idempotency_key);
@@ -301,7 +350,7 @@ class FireblocksSdkClient
      * Gets a single network connection
      * @param string $connection_id The network connection's id
      */
-    public function get_network_connection_by_id(string $connection_id)
+    public function get_network_connection_by_id(string $connection_id): Types\Response\Base\ResponseData
     {
         return $this->apiClient->get_request("/v1/network_connections/{$connection_id}");
     }
@@ -309,8 +358,9 @@ class FireblocksSdkClient
     /**
      * Removes a network connection
      * @param string $connection_id The network connection's id
+     * @throws FireblocksApiException
      */
-    public function remove_network_connection(string $connection_id)
+    public function remove_network_connection(string $connection_id): Types\Response\Base\ResponseData
     {
         return $this->apiClient->delete_request("/v1/network_connections/{$connection_id}");
     }
@@ -319,9 +369,9 @@ class FireblocksSdkClient
      *  Sets routing policy for a network connection
      * @param string $connection_id The network connection's id
      * @param array $routing_policy The desired routing policy
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
-    public function set_network_connection_routing_policy(string $connection_id, $routing_policy = [])
+    public function set_network_connection_routing_policy(string $connection_id, array $routing_policy = [])
     {
         $body = [
             "routingPolicy" => $routing_policy
@@ -332,7 +382,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all discoverable network profiles
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_discoverable_network_ids()
@@ -344,12 +394,12 @@ class FireblocksSdkClient
      *  Creates a new network profile
      * @param string $name A name for the new network profile
      * @param array $routing_policy The desired routing policy for the network
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
-    public function create_network_id(string $name, $routing_policy = [])
+    public function create_network_id(string $name, array $routing_policy = [])
     {
         $body = [
-            "name"          => $name,
+            "name" => $name,
             "routingPolicy" => $routing_policy
         ];
 
@@ -359,7 +409,7 @@ class FireblocksSdkClient
     /**
      *  Gets a single network profile
      * @param string $network_id The network profile's id
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_network_id(string $network_id)
@@ -371,7 +421,7 @@ class FireblocksSdkClient
      *  Sets discoverability for network profile
      * @param string $network_id The network profile's id
      * @param bool $is_discoverable he desired discoverability to set
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
     public function set_network_id_discoverability(string $network_id, bool $is_discoverable)
     {
@@ -386,9 +436,9 @@ class FireblocksSdkClient
      *  Sets routing policy for network profile
      * @param string $network_id The network profile's id
      * @param array $routing_policy The desired routing policy
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
-    public function set_network_id_routing_policy(string $network_id, $routing_policy = [])
+    public function set_network_id_routing_policy(string $network_id, array $routing_policy = [])
     {
         $body = [
             "routingPolicy" => $routing_policy
@@ -399,7 +449,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all exchange accounts for your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_exchange_accounts()
@@ -410,7 +460,7 @@ class FireblocksSdkClient
     /**
      *  Gets an exchange account for your tenant
      * @param string $exchange_account_id The exchange ID in Fireblocks
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_exchange_account(string $exchange_account_id)
@@ -422,7 +472,7 @@ class FireblocksSdkClient
      *  Get a specific asset from an exchange account
      * @param string $exchange_account_id The exchange ID in Fireblocks
      * @param string $asset_id The asset to transfer
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_exchange_account_asset(string $exchange_account_id, string $asset_id)
@@ -438,15 +488,15 @@ class FireblocksSdkClient
      * @param string $asset_id The asset to transfer
      * @param double $amount The amount to transfer
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
-    public function transfer_to_subaccount(string $exchange_account_id, string $subaccount_id, string $asset_id, $amount, string $idempotency_key = null)
+    public function transfer_to_subaccount(string $exchange_account_id, string $subaccount_id, string $asset_id, float $amount, string $idempotency_key = null)
     {
         settype($amount, "double");
 
         $body = [
             "subaccountId" => $subaccount_id,
-            "amount"       => $amount
+            "amount" => $amount
         ];
 
         return $this->apiClient->post_request("/v1/exchange_accounts/{$exchange_account_id}/{$asset_id}/transfer_to_subaccount",
@@ -460,14 +510,14 @@ class FireblocksSdkClient
      * @param string $asset_id The asset to transfer
      * @param double $amount The amount to transfer
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
-    public function transfer_from_subaccount(string $exchange_account_id, string $subaccount_id, string $asset_id, $amount, string $idempotency_key = null)
+    public function transfer_from_subaccount(string $exchange_account_id, string $subaccount_id, string $asset_id, float $amount, string $idempotency_key = null)
     {
         settype($amount, "double");
         $body = [
             "subaccountId" => $subaccount_id,
-            "amount"       => $amount
+            "amount" => $amount
         ];
 
         return $this->apiClient->post_request("/v1/exchange_accounts/{$exchange_account_id}/{$asset_id}/transfer_from_subaccount",
@@ -476,7 +526,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all fiat accounts for your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_fiat_accounts()
@@ -487,7 +537,7 @@ class FireblocksSdkClient
     /**
      * Gets a single fiat account by ID
      * @param string $account_id The fiat account ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_fiat_account_by_id(string $account_id)
@@ -500,9 +550,9 @@ class FireblocksSdkClient
      * @param string $account_id The fiat account ID in Fireblocks
      * @param double $amount The amount to transfer
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
-    public function redeem_to_linked_dda(string $account_id, $amount, string $idempotency_key = null)
+    public function redeem_to_linked_dda(string $account_id, float $amount, string $idempotency_key = null)
     {
         settype($amount, "double");
         $body = [
@@ -517,9 +567,9 @@ class FireblocksSdkClient
      * @param string $account_id The fiat account ID in Fireblocks
      * @param double $amount The amount to transfer
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
-    public function deposit_from_linked_dda(string $account_id, $amount, string $idempotency_key = null)
+    public function deposit_from_linked_dda(string $account_id, float $amount, string $idempotency_key = null)
     {
         settype($amount, "double");
         $body = [
@@ -535,102 +585,48 @@ class FireblocksSdkClient
      * If you wish to iterate over the nextPage/prevPage pages, please provide only the "next_or_previous_path" parameter from `pageDetails` response
      * example:
      * get_transactions_with_page_info(next_or_previous_path=response[pageDetails][nextPage])
-     * @param int $before Only gets transactions created before given timestamp (in milliseconds)
-     * @param int $after Only gets transactions created after given timestamp (in milliseconds)
-     * @param TransactionStatusEnums|null $status Only gets transactions with the specified status, which should one of the following:
-     * TransactionStatusEnums::_SUBMITTED(), QUEUED, PENDING_SIGNATURE, PENDING_AUTHORIZATION, PENDING_3RD_PARTY_MANUAL_APPROVAL,
-     * PENDING_3RD_PARTY, BROADCASTING, CONFIRMING, COMPLETED, PENDING_AML_CHECKUP, PARTIALLY_COMPLETED,
-     * CANCELLING, CANCELLED, REJECTED, FAILED, TIMEOUT, BLOCKED
-     * @param int|null $limit Limit the amount of returned results. If not specified, a limit of 200 results will be used
-     * @param string|null $txhash Only gets transactions with the specified txHash
-     * @param string|null $assets Filter results for specified assets
-     * @param PeerEnums|null $source_type Only gets transactions with given source_type, which should be one of the following:
-     * PeerEnums::_VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
-     * @param string|null $source_id Only gets transactions with given source_id
-     * @param PeerEnums|null $dest_type Only gets transactions with given dest_type, which should be one of the following:
-     * PeerEnums::_VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
-     * @param string|null $dest_id Only gets transactions with given dest_id
+     * @param ListTransactionsParameters $listTransactionsParameters
      * @param string|null $next_or_previous_path get transactions matching the path, provided from pageDetails
+     * @return TransactionDetailsPagedResponse
      */
-    public function get_transactions_with_page_info(int    $before = 0, int $after = 0, TransactionStatusEnums $status = null, int $limit = null, string $txhash = null,
-                                                    string $assets = null, PeerEnums $source_type = null, string $source_id = null, PeerEnums $dest_type = null, string $dest_id = null,
-                                                    string $next_or_previous_path = null)
+    public function get_transactions_with_page_info(ListTransactionsParameters $listTransactionsParameters, string $next_or_previous_path = null): TransactionDetailsPagedResponse
     {
         if (isset($next_or_previous_path)) {
             if (empty($next_or_previous_path)) {
-                return ['transactions' => [], 'pageDetails' => ['prevPage' => '', 'nextPage' => '']];
+                $paginateResponseData = [
+                    'transactions' => [],
+                    'pageDetails' => [
+                        'prevPage' => '',
+                        'nextPage' => ''
+                    ]
+                ];
+            } else {
+                $index = strpos($next_or_previous_path, '/v1/');
+                $length = strlen($next_or_previous_path) - 1;
+                $suffix_path = substr($next_or_previous_path, $index, $length + $index);
+                $paginateResponseData = $this->apiClient->get_request_paginate($suffix_path);
             }
-            $index       = strpos($next_or_previous_path, '/v1/');
-            $length      = strlen($next_or_previous_path) - 1;
-            $suffix_path = substr($next_or_previous_path, $index, $length + $index);
-            return $this->apiClient->get_request($suffix_path, True);
         } else {
-            return $this->_get_transactions($before, $after, $status, $limit, null, $txhash, $assets, $source_type, $source_id,
-                $dest_type, $dest_id, True);
+            $paginateResponseData = $this->apiClient->get_request_paginate("/v1/transactions", $listTransactionsParameters->toArray());
         }
-    }
 
-    private function _get_transactions($before, $after, $status, $limit, $order_by, $txhash, $assets, $source_type, $source_id,
-                                       $dest_type, $dest_id, $page_mode = false)
-    {
-        $params = [];
-
-        if ($before)
-            $params['before'] = $before;
-        if ($after)
-            $params['after'] = $after;
-        if ($status)
-            $params['status'] = $status;
-        if ($limit)
-            $params['limit'] = $limit;
-        if ($order_by)
-            $params['orderBy'] = $order_by;
-        if ($txhash)
-            $params['txHash'] = $txhash;
-        if ($assets)
-            $params['assets'] = $assets;
-        if ($source_type)
-            $params['sourceType'] = $source_type;
-        if ($source_id)
-            $params['sourceId'] = $source_id;
-        if ($dest_type)
-            $params['destType'] = $dest_type;
-        if ($dest_id)
-            $params['destId'] = $dest_id;
-
-        return $this->apiClient->get_request("/v1/transactions", $page_mode, $params);
+        return new TransactionDetailsPagedResponse(...$paginateResponseData);
     }
 
     /**
      * Gets a list of transactions matching the given filters
-     * @param int $before Only gets transactions created before given timestamp (in milliseconds)
-     * @param int $after Only gets transactions created after given timestamp (in milliseconds)
-     * @param TransactionStatusEnums|null $status Only gets transactions with the specified status, which should one of the following:
-     * TransactionStatusEnums::_SUBMITTED(), QUEUED, PENDING_SIGNATURE, PENDING_AUTHORIZATION, PENDING_3RD_PARTY_MANUAL_APPROVAL,
-     * PENDING_3RD_PARTY, BROADCASTING, CONFIRMING, COMPLETED, PENDING_AML_CHECKUP, PARTIALLY_COMPLETED,
-     * CANCELLING, CANCELLED, REJECTED, FAILED, TIMEOUT, BLOCKED
-     * @param int|null $limit Limit the amount of returned results. If not specified, a limit of 200 results will be used
-     * @param string|null $order_by Determines the order of the returned results. Possible values are 'createdAt' or 'lastUpdated'
-     * @param string|null $txhash Only gets transactions with the specified txHash
-     * @param string|null $assets Filter results for specified assets
-     * @param PeerEnums|null $source_type Only gets transactions with given source_type, which should be one of the following:
-     * PeerEnums::VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
-     * @param string|null $source_id Only gets transactions with given source_id
-     * @param PeerEnums|null $dest_type Only gets transactions with given dest_type, which should be one of the following:
-     * PeerEnums::_VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, UNKNOWN_PEER, FIAT_ACCOUNT, NETWORK_CONNECTION, COMPOUND
-     * @param string|null $dest_id Only gets transactions with given dest_id
-     * @return array|mixed|null
+     * @param ListTransactionsParameters $listTransactionsParameters
+     * @return TransactionDetailsList
      */
-    public function get_transactions(int    $before = 0, int $after = 0, TransactionStatusEnums $status = null, int $limit = null, string $order_by = null, string $txhash = null,
-                                     string $assets = null, PeerEnums $source_type = null, string $source_id = null, PeerEnums $dest_type = null, string $dest_id = null)
+    public function get_transactions(ListTransactionsParameters $listTransactionsParameters): TransactionDetailsList
     {
-        return $this->_get_transactions($before, $after, $status, $limit, $order_by, $txhash, $assets, $source_type, $source_id,
-            $dest_type, $dest_id);
+        $responseData = $this->apiClient->get_request("/v1/transactions", $listTransactionsParameters->toArray());
+        return new TransactionDetailsList($responseData->getData());
     }
 
     /**
      * Gets all internal wallets for your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_internal_wallets()
@@ -641,7 +637,7 @@ class FireblocksSdkClient
     /**
      * Gets an internal wallet from your tenant
      * @param string $wallet_id The wallet id to query
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_internal_wallet(string $wallet_id)
@@ -653,7 +649,7 @@ class FireblocksSdkClient
      * Gets an asset from an internal wallet from your tenant
      * @param string $wallet_id The wallet id to query
      * @param string $asset_id The asset id to query
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_internal_wallet_asset(string $wallet_id, string $asset_id)
@@ -663,7 +659,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all external wallets for your tenant"""
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_external_wallets()
@@ -674,7 +670,7 @@ class FireblocksSdkClient
     /**
      * Gets an external wallet from your tenant
      * @param string $wallet_id The wallet id to query
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_external_wallet(string $wallet_id)
@@ -686,7 +682,7 @@ class FireblocksSdkClient
      * Gets an asset from an external wallet from your tenant
      * @param string $wallet_id The wallet id to query
      * @param string $asset_id The asset id to query
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_external_wallet_asset(string $wallet_id, string $asset_id)
@@ -696,7 +692,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all contract wallets for your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_contract_wallets()
@@ -707,7 +703,7 @@ class FireblocksSdkClient
     /**
      * Gets a single contract wallet
      * @param string $wallet_id The contract wallet ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_contract_wallet(string $wallet_id)
@@ -719,7 +715,7 @@ class FireblocksSdkClient
      * Gets a single contract wallet asset
      * @param string $wallet_id The contract wallet ID
      * @param string $asset_id The asset ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_contract_wallet_asset(string $wallet_id, string $asset_id)
@@ -729,35 +725,35 @@ class FireblocksSdkClient
 
     /**
      * Gets detailed information for a single transaction
-     * @param string $txid The transaction id to query
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @param string $txId
+     * @return TransactionDetails
      */
-    public function get_transaction_by_id(string $txid)
+    public function get_transaction_by_id(string $txId): TransactionDetails
     {
-        return $this->apiClient->get_request("/v1/transactions/{$txid}");
+        $responseData = $this->apiClient->get_request("/v1/transactions/{$txId}");
+        return new TransactionDetails(...$responseData->getData());
     }
 
     /**
      * Gets detailed information for a single transaction
-     * @param string $external_tx_id The external id of the transaction
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @param string $externalTxId
+     * @return TransactionDetails
      */
-    public function get_transaction_by_external_id(string $external_tx_id)
+    public function get_transaction_by_external_id(string $externalTxId): TransactionDetails
     {
-        return $this->apiClient->get_request("/v1/transactions/external_tx_id/{$external_tx_id}");
+        $responseData = $this->apiClient->get_request("/v1/transactions/external_tx_id/{$externalTxId}");
+        return new TransactionDetails(...$responseData->getData());
     }
 
     /**
      * Gets the estimated fees for an asset
      * @param string $asset_id The asset symbol (e.g BTC, ETH)
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return NetworkFee
      */
-    public function get_fee_for_asset(string $asset_id)
+    public function get_fee_for_asset(string $asset_id): NetworkFee
     {
-        return $this->apiClient->get_request("/v1/estimate_network_fee", false, ['assetId' => $asset_id]);
+        $responseData = $this->apiClient->get_request("/v1/estimate_network_fee", ['assetId' => $asset_id]);
+        return new NetworkFee(...$responseData->getData());
     }
 
     /**
@@ -768,7 +764,8 @@ class FireblocksSdkClient
      * @param TransactionEnums|null $tx_type Transaction type: either TransactionEnums::_TRANSFER(), MINT, BURN, TRANSACTION_SUPPLY_TO_COMPOUND or TRANSACTION_REDEEM_FROM_COMPOUND. Default is TransactionEnums::_TRANSFER.
      * @param string|null $idempotency_key
      * @param array|null $destinations (list of TransactionDestination objects, optional) For UTXO based assets, send to multiple destinations which should be specified using this field.
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
+     * @throws FireblocksApiException
      */
     public function estimate_fee_for_transaction(string $asset_id, string $amount, TransferPeerPath $source, DestinationTransferPeerPath $destination = null, TransactionEnums $tx_type = null,
                                                  string $idempotency_key = null, array $destinations = null)
@@ -778,9 +775,9 @@ class FireblocksSdkClient
         }
 
         $body = [
-            "assetId"   => $asset_id,
-            "amount"    => $amount,
-            "source"    => get_object_vars($source),
+            "assetId" => $asset_id,
+            "amount" => $amount,
+            "source" => get_object_vars($source),
             "operation" => (string)$tx_type
         ];
         if ($destination) {
@@ -801,34 +798,34 @@ class FireblocksSdkClient
 
     /**
      * Cancels the selected transaction
-     * @param string $txid The transaction id to cancel
+     * @param string $txId The transaction id to cancel
      * @param string|null $idempotency_key
      */
-    public function cancel_transaction_by_id(string $txid, string $idempotency_key = null)
+    public function cancel_transaction_by_id(string $txId, string $idempotency_key = null)
     {
 
-        return $this->apiClient->post_request("/v1/transactions/{$txid}/cancel", [], $idempotency_key);
+        return $this->apiClient->post_request("/v1/transactions/{$txId}/cancel", [], $idempotency_key)->getData();
     }
 
     /**
      * Drops the selected transaction from the blockchain by replacing it with a 0 ETH transaction to itself
-     * @param string $txid The transaction id to drop
-     * @param string|null $fee_level The fee level of the dropping transaction
+     * @param string $txId The transaction id to drop
+     * @param FeeLevelEnums|null $fee_level The fee level of the dropping transaction
      * @param string|null $requested_fee Requested fee for transaction
      * @param string|null $idempotency_key
      * @return string|void
      */
-    public function drop_transaction(string $txid, string $fee_level = null, string $requested_fee = null, string $idempotency_key = null)
+    public function drop_transaction(string $txId, FeeLevelEnums $fee_level = null, string $requested_fee = null, string $idempotency_key = null)
     {
         $body = [];
 
         if ($fee_level)
-            $body["feeLevel"] = $fee_level;
+            $body["feeLevel"] = (string)$fee_level;
 
         if ($requested_fee)
             $body["requestedFee"] = $requested_fee;
 
-        return $this->apiClient->post_request("/v1/transactions/{$txid}/drop", $body, $idempotency_key);
+        return $this->apiClient->post_request("/v1/transactions/{$txId}/drop", $body, $idempotency_key)->getData();
     }
 
     /**
@@ -838,20 +835,21 @@ class FireblocksSdkClient
      * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
      * @param bool $autoFuel
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return VaultAccount
      */
-    public function create_vault_account(string $name, bool $hiddenOnUI = false, string $customer_ref_id = null, bool $autoFuel = false, string $idempotency_key = null)
+    public function create_vault_account(string $name, bool $hiddenOnUI = false, string $customer_ref_id = null, bool $autoFuel = false, string $idempotency_key = null): VaultAccount
     {
         $body = [
-            "name"       => $name,
+            "name" => $name,
             "hiddenOnUI" => $hiddenOnUI,
-            "autoFuel"   => $autoFuel
+            "autoFuel" => $autoFuel
         ];
 
         if ($customer_ref_id)
             $body["customerRefId"] = $customer_ref_id;
 
-        return $this->apiClient->post_request("/v1/vault/accounts", $body, $idempotency_key);
+        $responseData = $this->apiClient->post_request("/v1/vault/accounts", $body, $idempotency_key);
+        return new VaultAccount(...$responseData->getData());
     }
 
     /**
@@ -862,19 +860,18 @@ class FireblocksSdkClient
      */
     public function hide_vault_account(string $vault_account_id, $idempotency_key = null)
     {
-
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/hide", [], $idempotency_key);
+        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/hide", [], $idempotency_key)->getData();
     }
 
     /**
      * Returns the vault account to being visible in the web console
      * @param string $vault_account_id The vault account Id
      * @param string|null $idempotency_key
-     * @return string
+     * @return string|mixed|null
      */
     public function unhide_vault_account(string $vault_account_id, string $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/unhide", [], $idempotency_key);
+        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/unhide", [], $idempotency_key)->getData();
     }
 
     /**
@@ -885,7 +882,7 @@ class FireblocksSdkClient
      */
     public function freeze_transaction_by_id(string $txId, string $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/transactions/{$txId}/freeze", [], $idempotency_key);
+        return $this->apiClient->post_request("/v1/transactions/{$txId}/freeze", [], $idempotency_key)->getData();
     }
 
     /**
@@ -896,7 +893,7 @@ class FireblocksSdkClient
      */
     public function unfreeze_transaction_by_id(string $txId, string $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/transactions/{$txId}/unfreeze", [], $idempotency_key);
+        return $this->apiClient->post_request("/v1/transactions/{$txId}/unfreeze", [], $idempotency_key)->getData();
     }
 
     /**
@@ -907,7 +904,7 @@ class FireblocksSdkClient
      */
     public function update_vault_account(string $vault_account_id, string $name)
     {
-        return $this->apiClient->put_request("/v1/vault/accounts/{$vault_account_id}", ['name' => $name]);
+        return $this->apiClient->put_request("/v1/vault/accounts/{$vault_account_id}", ['name' => $name])->getData();
     }
 
     /**
@@ -915,11 +912,12 @@ class FireblocksSdkClient
      * @param string $vault_account_id The vault account Id
      * @param string $asset_id The symbol of the asset to add (e.g BTC, ETH)
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return CreateVaultAssetResponse
      */
-    public function create_vault_asset(string $vault_account_id, string $asset_id, string $idempotency_key = null)
+    public function create_vault_asset(string $vault_account_id, string $asset_id, string $idempotency_key = null): CreateVaultAssetResponse
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}", [], $idempotency_key);
+        $responseData = $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}", [], $idempotency_key);
+        return new CreateVaultAssetResponse(...$responseData->getData());
     }
 
     /**
@@ -927,7 +925,7 @@ class FireblocksSdkClient
      * @param string $vault_account_id The vault account Id
      * @param string $asset_id The symbol of the asset to add (e.g BTC, ETH)
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function activate_vault_asset(string $vault_account_id, string $asset_id, string $idempotency_key = null)
     {
@@ -943,7 +941,7 @@ class FireblocksSdkClient
      */
     public function set_vault_account_customer_ref_id(string $vault_account_id, string $customer_ref_id, string $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/set_customer_ref_id", ["customerRefId" => $customer_ref_id], $idempotency_key);
+        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/set_customer_ref_id", ["customerRefId" => $customer_ref_id], $idempotency_key)->getData();
     }
 
     /**
@@ -955,16 +953,16 @@ class FireblocksSdkClient
      * @param $idempotency_key
      * @return array|mixed|null
      */
-    public function set_vault_account_customer_ref_id_for_address(string $vault_account_id, string $asset_id, string $address, string $customer_ref_id = null, $idempotency_key = null)
+    public function set_customer_ref_id_for_address(string $vault_account_id, string $asset_id, string $address, string $customer_ref_id = null, $idempotency_key = null)
     {
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses/{$address}/set_customer_ref_id", ["customerRefId" => $customer_ref_id ?? ''], $idempotency_key);
+        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/addresses/{$address}/set_customer_ref_id", ["customerRefId" => $customer_ref_id ?? ''], $idempotency_key)->getData();
     }
 
     /**
      * Creates a new contract wallet
      * @param string $name A name for the new contract wallet
      * @param string|null $idempotency_key
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
     public function create_contract_wallet(string $name, string $idempotency_key = null)
     {
@@ -979,7 +977,7 @@ class FireblocksSdkClient
      * @param string $address The wallet address
      * @param string|null $tag (for ripple only) The ripple account tag
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function create_contract_wallet_asset(string $wallet_id, string $assetId, string $address, string $tag = null, string $idempotency_key = null)
     {
@@ -991,7 +989,7 @@ class FireblocksSdkClient
      * @param string $name A name for the new external wallet
      * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
      * @param string|null $idempotency_key
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
     public function create_external_wallet(string $name, string $customer_ref_id = null, string $idempotency_key = null)
     {
@@ -1003,7 +1001,7 @@ class FireblocksSdkClient
      * @param string $name A name for the new internal wallet
      * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
      * @param string|null $idempotency_key
-     * @return mixed
+     * @return Types\Response\Base\ResponseData
      */
     public function create_internal_wallet(string $name, string $customer_ref_id = null, string $idempotency_key = null)
     {
@@ -1017,7 +1015,7 @@ class FireblocksSdkClient
      * @param string $address The wallet address
      * @param string|null $tag (for ripple only) The ripple account tag
      * @param string|null $idempotency_key
-     * @return array|mixed|void|null
+     * @return Types\Response\Base\ResponseData
      */
     public function create_external_wallet_asset(string $wallet_id, string $asset_id, string $address, string $tag = null, string $idempotency_key = null)
     {
@@ -1037,7 +1035,7 @@ class FireblocksSdkClient
      * @param string $address The wallet address
      * @param string|null $tag (for ripple only) The ripple account tag
      * @param string|null $idempotency_key
-     * @return array|mixed|void|null
+     * @return Types\Response\Base\ResponseData
      */
     public function create_internal_wallet_asset(string $wallet_id, string $asset_id, string $address, string $tag = null, string $idempotency_key = null)
     {
@@ -1054,7 +1052,7 @@ class FireblocksSdkClient
     /**
      * Deletes a single contract wallet
      * @param string $wallet_id The contract wallet ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function delete_contract_wallet(string $wallet_id)
@@ -1066,7 +1064,7 @@ class FireblocksSdkClient
      * Deletes a single contract wallet
      * @param string $wallet_id The contract wallet ID
      * @param string $asset_id The asset ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function delete_contract_wallet_asset(string $wallet_id, string $asset_id)
@@ -1077,7 +1075,7 @@ class FireblocksSdkClient
     /**
      * Deletes a single internal wallet
      * @param string $wallet_id The internal wallet ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function delete_internal_wallet(string $wallet_id)
@@ -1088,7 +1086,7 @@ class FireblocksSdkClient
     /**
      * Deletes a single external wallet
      * @param string $wallet_id The external wallet ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function delete_external_wallet(string $wallet_id)
@@ -1100,7 +1098,7 @@ class FireblocksSdkClient
      * Deletes a single asset from an internal wallet
      * @param string $wallet_id The internal wallet ID
      * @param string $asset_id The asset ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function delete_internal_wallet_asset(string $wallet_id, string $asset_id)
@@ -1112,7 +1110,7 @@ class FireblocksSdkClient
      * Deletes a single asset from an external wallet
      * @param string $wallet_id The external wallet ID
      * @param string $asset_id The asset ID
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function delete_external_wallet_asset(string $wallet_id, string $asset_id)
@@ -1125,7 +1123,7 @@ class FireblocksSdkClient
      * @param string $wallet_id The external wallet ID
      * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function set_customer_ref_id_for_internal_wallet(string $wallet_id, string $customer_ref_id = null, string $idempotency_key = null)
     {
@@ -1137,7 +1135,7 @@ class FireblocksSdkClient
      * @param string $wallet_id The external wallet ID
      * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function set_customer_ref_id_for_external_wallet(string $wallet_id, string $customer_ref_id = null, string $idempotency_key = null)
     {
@@ -1146,7 +1144,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all transfer tickets of your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_transfer_tickets()
@@ -1160,7 +1158,7 @@ class FireblocksSdkClient
      * @param string|null $external_ticket_id The ID for of the transfer ticket on customer's platform
      * @param string|null $description A description for the new ticket
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function create_transfer_ticket(array $terms, string $external_ticket_id = null, string $description = null, string $idempotency_key = null)
@@ -1188,7 +1186,7 @@ class FireblocksSdkClient
     /**
      * Retrieve a transfer ticket
      * @param string $ticket_id The ID of the transfer ticket.
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_transfer_ticket_by_id(string $ticket_id)
@@ -1200,7 +1198,7 @@ class FireblocksSdkClient
      * Retrieve a transfer ticket
      * @param string $ticket_id The ID of the transfer ticket
      * @param string $term_id The ID of the term within the transfer ticket
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_transfer_ticket_term(string $ticket_id, string $term_id)
@@ -1212,7 +1210,7 @@ class FireblocksSdkClient
      * Cancel a transfer ticket
      * @param string $ticket_id The ID of the transfer ticket to cancel
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function cancel_transfer_ticket(string $ticket_id, string $idempotency_key = null)
     {
@@ -1225,7 +1223,7 @@ class FireblocksSdkClient
      * @param string $term_id The ID of the term within the transfer ticket
      * @param TransferPeerPath|null $source JSON object of the source of the transaction. The network connection's vault account by default
      * @param $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function execute_ticket_term(string $ticket_id, string $term_id, TransferPeerPath $source = null, $idempotency_key = null)
     {
@@ -1239,34 +1237,36 @@ class FireblocksSdkClient
 
     /**
      * Set the required number of confirmations for transaction
-     * @param string $txid The transaction id
+     * @param string $txId The transaction id
      * @param int|float|string $required_confirmations_number Required confirmation threshold fot the txid
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return SetConfirmationsThresholdResponse
      */
-    public function set_confirmation_threshold_for_txid(string $txid, string $required_confirmations_number, string $idempotency_key = null)
+    public function set_confirmation_threshold_for_txid(string $txId, string $required_confirmations_number, string $idempotency_key = null): SetConfirmationsThresholdResponse
     {
         $body = [
             "numOfConfirmations" => $required_confirmations_number
         ];
 
-        return $this->apiClient->post_request("/v1/transactions/{$txid}/set_confirmation_threshold", $body, $idempotency_key);
+        $responseData = $this->apiClient->post_request("/v1/transactions/{$txId}/set_confirmation_threshold", $body, $idempotency_key);
+        return new SetConfirmationsThresholdResponse(...$responseData->getData());
     }
 
     /**
      * Set the required number of confirmations for transaction by txhash
-     * @param string $txhash The transaction hash
+     * @param string $txHash The transaction hash
      * @param int|float|string $required_confirmations_number Required confirmation threshold fot the txhash
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return SetConfirmationsThresholdResponse
      */
-    public function set_confirmation_threshold_for_txhash(string $txhash, string $required_confirmations_number, string $idempotency_key = null)
+    public function set_confirmation_threshold_for_txhash(string $txHash, string $required_confirmations_number, string $idempotency_key = null): SetConfirmationsThresholdResponse
     {
         $body = [
             "numOfConfirmations" => $required_confirmations_number
         ];
 
-        return $this->apiClient->post_request("/v1/txHash/{$txhash}/set_confirmation_threshold", $body, $idempotency_key);
+        $responseData = $this->apiClient->post_request("/v1/txHash/{$txHash}/set_confirmation_threshold", $body, $idempotency_key);
+        return new SetConfirmationsThresholdResponse(...$responseData->getData());
     }
 
     /**
@@ -1274,10 +1274,9 @@ class FireblocksSdkClient
      * @param SigningAlgorithmEnums $algorithm String, one of the supported SigningAlgorithms.
      * @param array $derivation_path List of integers. [44,0,0,0,0]
      * @param bool|null $compressed Boolean, whether the returned key should be in compressed format or not, false by default.
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return PublicKey
      */
-    public function get_public_key_info(SigningAlgorithmEnums $algorithm, array $derivation_path, bool $compressed = null)
+    public function get_public_key_info(SigningAlgorithmEnums $algorithm, array $derivation_path, bool $compressed = null): PublicKey
     {
         $params = [
             'algorithm' => (string)$algorithm
@@ -1288,7 +1287,8 @@ class FireblocksSdkClient
         if ($compressed)
             $params['compressed'] = $compressed;
 
-        return $this->apiClient->get_request("/v1/vault/public_key_info", false, $params);
+        $responseData = $this->apiClient->get_request("/v1/vault/public_key_info", $params);
+        return new PublicKey(...$responseData->getData());
     }
 
     /**
@@ -1298,17 +1298,17 @@ class FireblocksSdkClient
      * @param int|float|string $change Whether the address should be derived internal (change) or not.
      * @param int|float|string $address_index The index of the address for the derivation path.
      * @param bool|null $compressed Boolean, whether the returned key should be in compressed format or not, false by default.
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return PublicKey
      */
-    public function get_public_key_info_for_vault_account(string $asset_id, string $vault_account_id, string $change, string $address_index, bool $compressed = null)
+    public function get_public_key_info_for_vault_account(string $asset_id, string $vault_account_id, string $change, string $address_index, bool $compressed = null): PublicKey
     {
         $params = [];
 
         if ($compressed)
             $params['compressed'] = $compressed;
 
-        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/{$change}/{$address_index}/public_key_info", false, $params);
+        $responseData = $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/{$change}/{$address_index}/public_key_info", $params);
+        return new PublicKey(...$responseData->getData());
     }
 
     /**
@@ -1319,7 +1319,7 @@ class FireblocksSdkClient
      * @param string $amount
      * @param bool|null $treat_as_gross_amount
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function allocate_funds_to_private_ledger(string $vault_account_id, string $asset, string $allocation_id, string $amount, bool $treat_as_gross_amount = null, string $idempotency_key = null)
     {
@@ -1332,8 +1332,8 @@ class FireblocksSdkClient
      * @param string $asset
      * @param string $allocation_id
      * @param string $amount
-     * @param string|null $
-     * @return array|mixed|null
+     * @param string|null $idempotency_key
+     * @return Types\Response\Base\ResponseData
      */
     public function deallocate_funds_from_private_ledger(string $vault_account_id, string $asset, string $allocation_id, string $amount, string $idempotency_key = null)
     {
@@ -1343,7 +1343,7 @@ class FireblocksSdkClient
     /**
      * Get configuration and status of the Gas Station account
      * @param string|null $asset_id
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_gas_station_info(string $asset_id = null)
@@ -1362,7 +1362,7 @@ class FireblocksSdkClient
      * @param string $gas_cap Up to this level the address will be funded with ETH, in ETH units.
      * @param string|null $max_gas_price The funding transaction will be sent with this maximum value gas price, in Gwei units.
      * @param string|null $asset_id
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function set_gas_station_configuration(string $gas_threshold, string $gas_cap, string $max_gas_price = null, string $asset_id = null)
     {
@@ -1373,8 +1373,8 @@ class FireblocksSdkClient
 
         $body = [
             "gasThreshold" => $gas_threshold,
-            "gasCap"       => $gas_cap,
-            "maxGasPrice"  => $max_gas_price
+            "gasCap" => $gas_cap,
+            "maxGasPrice" => $max_gas_price
         ];
 
         return $this->apiClient->put_request($url, $body);
@@ -1384,10 +1384,9 @@ class FireblocksSdkClient
      * Gets vault assets accumulated balance
      * @param string|null $account_name_prefix Vault account name prefix
      * @param string|null $account_name_suffix Vault account name suffix
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return VaultAssetList
      */
-    public function get_vault_assets_balance(string $account_name_prefix = null, string $account_name_suffix = null)
+    public function get_vault_assets_balance(string $account_name_prefix = null, string $account_name_suffix = null): VaultAssetList
     {
         $params = [];
 
@@ -1397,157 +1396,52 @@ class FireblocksSdkClient
         if ($account_name_suffix)
             $params['accountNameSuffix'] = $account_name_suffix;
 
-        return $this->apiClient->get_request("/v1/vault/assets", false, $params);
+        $responseData = $this->apiClient->get_request("/v1/vault/assets", $params);
+        return new VaultAssetList($responseData->getData());
     }
 
     /**
      * Gets vault accumulated balance by asset
      * @param string|null $asset_id The asset symbol (e.g BTC, ETH)
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return VaultAsset
      */
-    public function get_vault_balance_by_asset(string $asset_id = null)
+    public function get_vault_balance_by_asset(string $asset_id = null): VaultAsset
     {
         $url = "/v1/vault/assets";
 
         if ($asset_id)
             $url .= "/{$asset_id}";
 
-        return $this->apiClient->get_request($url);
+        $responseData = $this->apiClient->get_request($url);
+        return new VaultAsset(...$responseData->getData());
     }
 
     /**
      * Creates a new raw transaction with the specified parameters
-     * @param RawMessage $raw_message The messages that should be signed
-     * @param TransferPeerPath|null $source The transaction source
-     * @param string|null $asset_id Transaction asset id
-     * @param string|null $note A custome note that can be associated with the transaction
-     * @return mixed
+     * @param CreateRawTransactionParameters $createRawTransactionParameters
+     * @return CreateTransactionResponse
      * @throws FireblocksApiException
      */
-    public function create_raw_transaction(RawMessage $raw_message, TransferPeerPath $source = null, string $asset_id = null, string $note = null)
+    public function create_raw_transaction(CreateRawTransactionParameters $createRawTransactionParameters, ?string $idempotency_key = null): CreateTransactionResponse
     {
-        if (is_null($asset_id) && is_null($raw_message->algorithm)) {
-            throw new FireblocksApiException("Got invalid signing algorithm type: {$raw_message->algorithm}");
+        if (is_null($createRawTransactionParameters->getAssetId()) && is_null($createRawTransactionParameters->getRawMessageData()->algorithm)) {
+            throw new FireblocksApiException("Got invalid signing algorithm type: {$createRawTransactionParameters->getRawMessageData()->algorithm}");
         }
 
-        return $this->create_transaction($asset_id, null,$source, null,null,null,false, TransactionEnums::_RAW(),$note,null, null,null,["rawMessageData" => get_object_vars($raw_message)]);
+        $responseData = $this->apiClient->post_request("/v1/transactions", $createRawTransactionParameters->toArray(), $idempotency_key);
+        return new CreateTransactionResponse(...$responseData->getData());
     }
 
     /**
-     * @param string|null $asset_id The asset symbol (e.g BTC, ETH)
-     * @param double|string|null $amount The amount
-     * @param TransferPeerPath|null $source The transfer source
-     * @param DestinationTransferPeerPath|TransferPeerPath|null $destination The transfer destination. Leave empty (None) if the transaction has no destination
-     * @param double|string|null $fee Sathoshi/Latoshi per byte.
-     * @param int|null $gas_price gasPrice for ETH and ERC-20 transactions
-     * @param bool $wait_for_status If true, waits for transaction status. Default is false.
-     * @param TransactionEnums|null $tx_type Transaction type: either TRANSFER, MINT, BURN, TRANSACTION_SUPPLY_TO_COMPOUND or TRANSACTION_REDEEM_FROM_COMPOUND. Default is TRANSFER.
-     * @param string|null $note A custome note that can be associated with the transaction.
-     * @param string|null $network_fee Transaction blockchain fee (For Ethereum, you can't pass gasPrice, gasLimit and networkFee all together)
-     * @param string|null $customer_ref_id The ID for AML providers to associate the owner of funds with transactions
-     * @param string|null $replace_tx_by_hash For Ethereum blockchain transactions, the hash of the stuck transaction to be replaced (RBF)
-     * @param mixed|null $extra_parameters Use for protocol / operation specific parameters.
-     * For raw signing, pass rawMessageData field.
-     * For contract calls, pass contractCallData (See here for more details on Smart Contract API and contract calls).
-     * For UTXO based blockchains inputs selectios pass inputsSelection following this structure. The inputs can be retrieved from Retrieve Unspent Inputs.
-     * @param array|null $destinations (list of TransactionDestination objects, optional): For UTXO based assets, send to multiple destinations which should be specified using this field.
-     * @param FeeLevelEnums|null $fee_level Transaction fee level: either HIGH, MEDIUM, LOW.
-     * @param bool|null $fail_on_low_fee false by default, if set to true and MEDIUM fee level is higher than the one specified in the transaction, the transction will fail.
-     * @param string|null $max_fee The maximum fee (gas price or fee per byte) that should be payed for the transaction.
-     * @param int|null $gas_limit For ETH-based assets only.
+     * @param CreateTransactionParameters $createTransactionParameters
      * @param string|null $idempotency_key
-     * @param string|null $external_tx_id A unique key for transaction provided externally
-     * @param bool|null $treat_as_gross_amount Determine if amount should be treated as gross or net
-     * @param bool|null $force_sweep Determine if transaction should be treated as a forced sweep
-     * @param int|null $priority_fee The priority fee of Ethereum transaction according to EIP-1559
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return CreateTransactionResponse
      */
-    public function create_transaction(string        $asset_id = null, string $amount = null, TransferPeerPath $source = null, DestinationTransferPeerPath $destination = null,
-                                       string         $fee = null, int $gas_price = null, bool $wait_for_status = false, TransactionEnums $tx_type = null, string $note = null, string $network_fee = null,
-                                       string        $customer_ref_id = null, string $replace_tx_by_hash = null, $extra_parameters = null, array $destinations = null,
-                                       FeeLevelEnums $fee_level = null, bool $fail_on_low_fee = null, string $max_fee = null, int $gas_limit = null, string $idempotency_key = null,
-                                       string        $external_tx_id = null, bool $treat_as_gross_amount = null, bool $force_sweep = null, int $priority_fee = null)
+    public function create_transaction(CreateTransactionParameters $createTransactionParameters, ?string $idempotency_key = null): CreateTransactionResponse
     {
-        if (is_null($tx_type)) {
-            $tx_type = TransactionEnums::_TRANSFER();
-        }
 
-        $body = [
-            "waitForStatus" => $wait_for_status,
-            "operation"     => (string)$tx_type,
-        ];
-
-        if ($asset_id)
-            $body["assetId"] = $asset_id;
-
-        if ($source)
-            $body["source"] = get_object_vars($source);
-
-        if ($amount != null)
-            $body["amount"] = $amount;
-
-        if ($fee)
-            $body["fee"] = $fee;
-
-        if ($fee_level) {
-            $body["feeLevel"] = $fee_level;
-        }
-
-        if ($max_fee)
-            $body["maxFee"] = $max_fee;
-
-        if ($fail_on_low_fee)
-            $body["failOnLowFee"] = $fail_on_low_fee;
-
-        if ($gas_price)
-            $body["gasPrice"] = (string)$gas_price;
-
-        if ($gas_limit)
-            $body["gasLimit"] = (string)$gas_limit;
-
-        if ($note)
-            $body["note"] = $note;
-
-        if ($destination)
-            $body["destination"] = get_object_vars($destination);
-
-        if ($network_fee)
-            $body["networkFee"] = $network_fee;
-
-        if ($customer_ref_id)
-            $body["customerRefId"] = $customer_ref_id;
-
-        if ($replace_tx_by_hash)
-            $body["replaceTxByHash"] = $replace_tx_by_hash;
-
-        if ($treat_as_gross_amount)
-            $body["treatAsGrossAmount"] = $treat_as_gross_amount;
-
-        if ($destinations) {
-            $body['destinations'] = [];
-            foreach ($destinations as $item) {
-                if (!($item instanceof TransactionDestination)) {
-                    throw new FireblocksApiException("Expected destinations of type TransactionDestination");
-                }
-                $body['destinations'][] = get_object_vars($item);
-            }
-        }
-
-        if ($extra_parameters)
-            $body["extraParameters"] = $extra_parameters;
-
-        if ($external_tx_id)
-            $body["externalTxId"] = $external_tx_id;
-
-        if ($force_sweep)
-            $body["forceSweep"] = $force_sweep;
-
-        if ($priority_fee)
-            $body["priorityFee"] = $priority_fee;
-
-        return $this->apiClient->post_request("/v1/transactions", $body, $idempotency_key);
+        $responseData = $this->apiClient->post_request("/v1/transactions", $createTransactionParameters->toArray(), $idempotency_key);
+        return new CreateTransactionResponse(...$responseData->getData());
     }
 
 
@@ -1558,13 +1452,13 @@ class FireblocksSdkClient
      * @param string|null $idempotency_key
      * @return array|mixed|null
      */
-    public function set_auto_fuel(string $vault_account_id, bool $auto_fuel, string $idempotency_key = null)
+    public function setAutoFuel(string $vault_account_id, bool $auto_fuel, string $idempotency_key = null)
     {
         $body = [
             "autoFuel" => $auto_fuel
         ];
 
-        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/set_auto_fuel", $body, $idempotency_key);
+        return $this->apiClient->post_request("/v1/vault/accounts/{$vault_account_id}/set_auto_fuel", $body, $idempotency_key)->getData();
     }
 
     /**
@@ -1572,12 +1466,12 @@ class FireblocksSdkClient
      * @param string $tx_id The transaction for which the message is sent.
      * @param bool $resend_created If true, a webhook will be sent for the creation of the transaction.
      * @param bool $resend_status_updated If true, a webhook will be sent for the status of the transaction.
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function resend_transaction_webhooks_by_id(string $tx_id, bool $resend_created, bool $resend_status_updated)
     {
         $body = [
-            "resendCreated"       => $resend_created,
+            "resendCreated" => $resend_created,
             "resendStatusUpdated" => $resend_status_updated
         ];
 
@@ -1590,28 +1484,27 @@ class FireblocksSdkClient
      * @param string $asset_id Asset id.
      * @param bool $manual_signing False by default.
      * @return array|mixed|null
-     * @throws FireblocksApiException
      */
     public function get_max_spendable_amount(string $vault_account_id, string $asset_id, bool $manual_signing = false)
     {
-        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/max_spendable_amount?manual_signing={manual_signing}");
+        return $this->apiClient->get_request("/v1/vault/accounts/{$vault_account_id}/{$asset_id}/max_spendable_amount?manual_signing={manual_signing}")->getData();
     }
 
     /**
      * Gets vault accumulated balance by asset
-     * @param string $asset_id The asset symbol (e.g XRP, EOS)
+     * @param string $asset_id The asset symbol (e.g XRP, EOS) Supported for the following assets: XRP, DOT, XLM, EOS.
      * @param string $address The address to be verified
-     * @return array|mixed|null
-     * @throws FireblocksApiException
+     * @return AddressStatus
      */
-    public function validate_address(string $asset_id, string $address)
+    public function validate_address(string $asset_id, string $address): AddressStatus
     {
-        return $this->apiClient->get_request("/v1/transactions/validate_address/{$asset_id}/{$address}");
+        $responseData = $this->apiClient->get_request("/v1/transactions/validate_address/{$asset_id}/{$address}");
+        return new AddressStatus(...$responseData->getData());
     }
 
     /**
      * Resend failed webhooks of your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function resend_webhooks()
     {
@@ -1620,7 +1513,7 @@ class FireblocksSdkClient
 
     /**
      * Gets all users of your tenant
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_users()
@@ -1630,7 +1523,7 @@ class FireblocksSdkClient
 
     /**
      * Get your connected off exchanges virtual accounts
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_off_exchanges()
@@ -1641,7 +1534,7 @@ class FireblocksSdkClient
     /**
      * Get your connected off exchange by it's ID
      * @param string $off_exchange_id ID of the off exchange virtual account
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_off_exchange_by_id(string $off_exchange_id)
@@ -1653,7 +1546,7 @@ class FireblocksSdkClient
      * Create a settle request to your off exchange by it's ID
      * @param string $off_exchange_id ID of the off exchange virtual account
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function settle_off_exchange_by_id(string $off_exchange_id, string $idempotency_key = null)
     {
@@ -1665,7 +1558,7 @@ class FireblocksSdkClient
      * @param string $base_asset ID of the base asset you want to configure fee payer for (for example: SOL)
      * @param string $fee_payer_account_id ID of the vault account you want your fee to be paid from
      * @param string|null $idempotency_key
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      */
     public function set_fee_payer_configuration(string $base_asset, string $fee_payer_account_id, string $idempotency_key = null)
     {
@@ -1679,7 +1572,7 @@ class FireblocksSdkClient
     /**
      * Get fee payer configuration for base asset
      * @param string $base_asset ID of the base asset
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function get_fee_payer_configuration(string $base_asset)
@@ -1690,7 +1583,7 @@ class FireblocksSdkClient
     /**
      * Delete fee payer configuration for base asset
      * @param string $base_asset ID of the base asset
-     * @return array|mixed|null
+     * @return Types\Response\Base\ResponseData
      * @throws FireblocksApiException
      */
     public function remove_fee_payer_configuration(string $base_asset)

@@ -12,7 +12,7 @@ class JwtService
      * @param string $private_key
      * @return string
      */
-    public static function generateJwtRS256(array $payload, $private_key)
+    public static function generateJwtRS256(array $payload, string $private_key): string
     {
         $headerJson  = json_encode([
             'alg' => 'RS256',
@@ -36,11 +36,14 @@ class JwtService
         return $jwt;
     }
 
-    private static function base64UrlEncode($data)
+    private static function base64UrlEncode($data): string
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
+    /**
+     * @throws FireblocksApiException
+     */
     public static function validateJwt(string $jwt, string $secret = 'secret'): bool
     {
         // split the jwt
@@ -75,6 +78,9 @@ class JwtService
         }
     }
 
+    /**
+     * @throws FireblocksApiException
+     */
     public static function validateContentBySignature(string $body, string $signature): bool
     {
         $config = config('fireblocks');

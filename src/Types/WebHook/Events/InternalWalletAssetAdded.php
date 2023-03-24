@@ -14,7 +14,7 @@ class InternalWalletAssetAdded extends BaseEvent
     }
 
     /**
-     * @return EventData<WalletAssetWebhook>
+     * @return WalletAssetWebhook
      */
     public function getData(): WalletAssetWebhook
     {

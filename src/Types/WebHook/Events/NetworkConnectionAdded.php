@@ -14,7 +14,7 @@ class NetworkConnectionAdded extends BaseEvent
     }
 
     /**
-     * @return EventData<NetworkConnection>
+     * @return NetworkConnection
      */
     public function getData(): NetworkConnection
     {

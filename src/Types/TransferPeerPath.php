@@ -3,9 +3,12 @@
 namespace FireblocksSdkLaravel\Types;
 
 use FireblocksSdkLaravel\Types\Enums\PeerEnums;
+use FireblocksSdkLaravel\Types\Request\Base\ToArray;
+use FireblocksSdkLaravel\Types\Request\Base\ToArrayAccess;
 
-class TransferPeerPath
+class TransferPeerPath implements ToArrayAccess
 {
+    use ToArray;
     /**
      * Defines a source or a destination for a transfer
      * @param PeerEnums $peer_type either PeerEnums::VAULT_ACCOUNT(), EXCHANGE_ACCOUNT, INTERNAL_WALLET, EXTERNAL_WALLET, FIAT_ACCOUNT, NETWORK_CONNECTION, ONE_TIME_ADDRESS or UNKNOWN_PEER
