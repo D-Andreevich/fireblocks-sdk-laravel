@@ -14,7 +14,7 @@ class VaultAccountAdded extends BaseEvent
     }
 
     /**
-     * @return EventData<VaultAccount>
+     * @return VaultAccount
      */
     public function getData(): VaultAccount
     {

@@ -14,7 +14,7 @@ class ExchangeAccountAdded extends BaseEvent
     }
 
     /**
-     * @return EventData<ThirdPartyWebhook>
+     * @return ThirdPartyWebhook
      */
     public function getData(): ThirdPartyWebhook
     {

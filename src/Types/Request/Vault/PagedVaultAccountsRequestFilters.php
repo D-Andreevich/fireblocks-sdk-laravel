@@ -1,9 +1,14 @@
 <?php
 
-namespace FireblocksSdkLaravel\Types;
+namespace FireblocksSdkLaravel\Types\Request\Vault;
 
-class PagedVaultAccountsRequestFilters
+use FireblocksSdkLaravel\Types\Request\Base\ToArray;
+use FireblocksSdkLaravel\Types\Request\Base\ToArrayAccess;
+
+class PagedVaultAccountsRequestFilters implements ToArrayAccess
 {
+    use ToArray;
+
     /**
      * Optional filters to apply for request
      * @param string|null $name_prefix (string, optional): Vault account name prefix
@@ -21,25 +26,14 @@ class PagedVaultAccountsRequestFilters
      */
     public function __construct(string $name_prefix = null, string $name_suffix = null, string $min_amount_threshold = null, string $asset_id = null, string $order_by = null, int $limit = null, string $before = null, string $after = null)
     {
-        $this->namePrefix         = $name_prefix;
-        $this->nameSuffix         = $name_suffix;
+        $this->namePrefix = $name_prefix;
+        $this->nameSuffix = $name_suffix;
         $this->minAmountThreshold = $min_amount_threshold;
-        $this->assetId            = $asset_id;
-        $this->orderBy            = $order_by;
-        $this->limit              = $limit;
-        $this->before             = $before;
-        $this->after              = $after;
-    }
-
-    public function getParams(): array
-    {
-        $params = [];
-        foreach (get_object_vars($this) as $key => $value) {
-            if ($value) {
-                $params[$key] = $value;
-            }
-        }
-        return $params;
+        $this->assetId = $asset_id;
+        $this->orderBy = $order_by;
+        $this->limit = $limit;
+        $this->before = $before;
+        $this->after = $after;
     }
 
     /**
@@ -105,6 +99,5 @@ class PagedVaultAccountsRequestFilters
     {
         return $this->orderBy;
     }
-
 
 }

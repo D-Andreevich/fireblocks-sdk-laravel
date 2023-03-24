@@ -1,6 +1,6 @@
 <?php
 
-namespace FireblocksSdkLaravel\Types\WebHook\Events\DataObjects;
+namespace FireblocksSdkLaravel\Types\Response\Transactions;
 
 use FireblocksSdkLaravel\Types\AmlScreeningResult;
 use FireblocksSdkLaravel\Types\AmountInfo;

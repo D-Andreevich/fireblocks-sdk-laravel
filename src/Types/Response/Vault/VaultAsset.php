@@ -1,6 +1,6 @@
 <?php
 
-namespace FireblocksSdkLaravel\Types;
+namespace FireblocksSdkLaravel\Types\Response\Vault;
 
 class VaultAsset
 {
