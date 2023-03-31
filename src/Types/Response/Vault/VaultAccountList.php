@@ -2,7 +2,6 @@
 
 namespace FireblocksSdkLaravel\Types\Response\Vault;
 
-use FireblocksSdkLaravel\Types\WebHook\Events\DataObjects\VaultAccount;
 
 class VaultAccountList extends \FireblocksSdkLaravel\Types\Base\ArrayList
 {

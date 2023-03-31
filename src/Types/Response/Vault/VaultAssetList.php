@@ -2,7 +2,9 @@
 
 namespace FireblocksSdkLaravel\Types\Response\Vault;
 
-class VaultAssetList extends \FireblocksSdkLaravel\Types\Base\ArrayList
+use FireblocksSdkLaravel\Types\Base\ArrayList;
+
+class VaultAssetList extends ArrayList
 {
     /**
      * @var VaultAsset[]

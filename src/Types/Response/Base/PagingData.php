@@ -4,34 +4,33 @@ namespace FireblocksSdkLaravel\Types\Response\Base;
 
 class PagingData
 {
-    private string $before;
-    private string $after;
+    private ?string $before;
+    private ?string $after;
 
     /**
-     * @param string $before
-     * @param string $after
+     * @param string|null $before
+     * @param string|null $after
      */
-    public function __construct(string $before, string $after)
+    public function __construct(?string $before = null, ?string $after = null)
     {
         $this->before = $before;
         $this->after = $after;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getBefore(): string
+    public function getBefore(): ?string
     {
         return $this->before;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getAfter(): string
+    public function getAfter(): ?string
     {
         return $this->after;
     }
-
 
 }

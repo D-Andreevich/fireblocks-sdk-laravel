@@ -10,6 +10,7 @@ class AssetTypeResponse
     private ?string $contractAddress; //	[Optional] The smart contract address used for deposit and withdrawal. (Note: This parameter is for blockchains that us a contract address, such as EVM-based blockchains.)
     private ?string $nativeAsset; //	[Optional] The name of the native asset.
     private ?int $decimals; //	[Optional] The number of digits after the decimal point.
+    private ?string $issuerAddress; //	[Optional]
 
     /**
      * @param string $id
@@ -18,8 +19,9 @@ class AssetTypeResponse
      * @param string|null $contractAddress
      * @param string|null $nativeAsset
      * @param int|null $decimals
+     * @param string|null $issuerAddress
      */
-    public function __construct(string $id, string $name, string $type, ?string $contractAddress = null, ?string $nativeAsset = null, ?int $decimals = null)
+    public function __construct(string $id, string $name, string $type, ?string $contractAddress = null, ?string $nativeAsset = null, ?int $decimals = null, ?string $issuerAddress = null)
     {
         $this->id = $id;
         $this->name = $name;
@@ -27,7 +29,17 @@ class AssetTypeResponse
         $this->contractAddress = $contractAddress;
         $this->nativeAsset = $nativeAsset;
         $this->decimals = $decimals;
+        $this->issuerAddress = $issuerAddress;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getIssuerAddress(): ?string
+    {
+        return $this->issuerAddress;
+    }
+
 
     /**
      * @return string
