@@ -17,7 +17,7 @@ class VaultAccountsPagedResponse
      * @param string|null $previousUrl
      * @param string|null $nextUrl
      */
-    public function __construct(array $accounts, array $paging, ?string $previousUrl = null, ?string $nextUrl = null)
+    public function __construct(array $accounts, ?array $paging = [], ?string $previousUrl = null, ?string $nextUrl = null)
     {
         $this->accounts = new VaultAccountList($accounts);
         $this->paging = new PagingData(...$paging);
