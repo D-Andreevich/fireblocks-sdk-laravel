@@ -3,6 +3,7 @@
 namespace FireblocksSdkLaravel\Types\Request\Transactions;
 
 use FireblocksSdkLaravel\Types\DestinationTransferPeerPath;
+use FireblocksSdkLaravel\Types\Enums\FeeLevelEnums;
 use FireblocksSdkLaravel\Types\Enums\TransactionOperationEnums;
 use FireblocksSdkLaravel\Types\Request\Base\ToArray;
 use FireblocksSdkLaravel\Types\Request\Base\ToArrayAccess;
@@ -15,16 +16,16 @@ class CreateTransactionParameters implements ToArrayAccess
 
     private string $assetId;    //The ID of the asset
     private TransferPeerPath $source;    //The source account of the transaction.
-    private DestinationTransferPeerPath $destination;    //The destination of the transaction.
-    private TransactionRequestDestinationList $destinations;    //array of TransactionRequestDestination	For UTXO based assets, you can send a single transaction to multiple destinations which should be specified using this field.
-    private string $amount;    //string	The requested amount to transfer.
+    private ?DestinationTransferPeerPath $destination;    //The destination of the transaction.
+    private ?TransactionRequestDestinationList $destinations;    //array of TransactionRequestDestination	For UTXO based assets, you can send a single transaction to multiple destinations which should be specified using this field.
+    private ?string $amount;    //string	The requested amount to transfer.
     private bool $treatAsGrossAmount = False;    //False by default, if set to true the network fee will be deducted from the requested amount.
     private ?string $fee;    //string	[optional] For UTXO assets, the fee per bytes in the asset's smallest unit (Satoshi, Latoshi, etc.). For XRP, the fee for the transaction.
     private ?string $gasPrice;    //string	[optional] For ETH-based assets only this will be used instead of the fee property, value is in Gwei.
     private ?string $gasLimit;    //string	[optional] For ETH-based assets only.
     private ?string $networkFee;    //string	[optional] The transaction blockchain fee (For Ethereum, you can't pass gasPrice, gasLimit and networkFee all together).
     private ?string $priorityFee;    //string	[optional] The priority fee of Ethereum transaction according to EIP-1559.
-    private ?string $feeLevel;    //[optional] LOW / MEDIUM / HIGH - Defines the blockchain fee level which will be payed for the transaction. Only for Ethereum and UTXO blockchains.
+    private ?FeeLevelEnums $feeLevel;    //[optional] LOW / MEDIUM / HIGH - Defines the blockchain fee level which will be payed for the transaction. Only for Ethereum and UTXO blockchains.
     private ?string $maxFee;    //string	[optional] The maximum fee (gas price or fee per byte) that should be payed for the transaction. In case the current value of the requested fee level is higher than this requested maximum fee.
     private ?bool $failOnLowFee;    //[optional] False by default, if set to true and the current MEDIUM fee level is higher than the one specified in the transaction, the transction will fail to avoid getting stuck with 0 confirmations.
     private ?bool $forceSweep;    //For "DOT" transactions only, "false" by default, if set to "true" Fireblocks will allow emptying the DOT wallet.
@@ -32,7 +33,7 @@ class CreateTransactionParameters implements ToArrayAccess
     private ?bool $autoStaking;    //[optional] Deprecated.
     private ?string $networkStaking;    //[optional] Deprecated.
     private ?string $cpuStaking;    //[optional] Deprecated.
-    private ?TransactionOperationEnums $operation;    //[optional] Transaction operation type, the default is "TRANSFER".
+    private ?TransactionOperation $operation;    //[optional] Transaction operation type, the default is "TRANSFER".
     private ?string $customerRefId;    //[optional] The ID for AML providers to associate the owner of funds with transactions.
     private ?string $replaceTxByHash;    //[optional] For Ethereum blockchain transactions, the hash of the stuck transaction to be replaced (RBF).
     private ?string $externalTxId;    //[optional] Unique transaction ID provided by the user. Future transactions with same ID will be rejected.
@@ -43,16 +44,16 @@ class CreateTransactionParameters implements ToArrayAccess
     /**
      * @param string $assetId
      * @param TransferPeerPath $source
-     * @param DestinationTransferPeerPath $destination
-     * @param TransactionRequestDestinationList $destinations
-     * @param string $amount
+     * @param DestinationTransferPeerPath|null $destination
+     * @param TransactionRequestDestinationList|null $destinations
+     * @param string|null $amount
      * @param bool $treatAsGrossAmount
      * @param string|null $fee
      * @param string|null $gasPrice
      * @param string|null $gasLimit
      * @param string|null $networkFee
      * @param string|null $priorityFee
-     * @param string|null $feeLevel
+     * @param FeeLevelEnums|null $feeLevel
      * @param string|null $maxFee
      * @param bool|null $failOnLowFee
      * @param bool|null $forceSweep
@@ -66,34 +67,41 @@ class CreateTransactionParameters implements ToArrayAccess
      * @param string|null $externalTxId
      * @param array|null $extraParameters
      */
-    public function __construct(string $assetId, TransferPeerPath $source, DestinationTransferPeerPath $destination, TransactionRequestDestinationList $destinations, string $amount, bool $treatAsGrossAmount, ?string $fee = null, ?string $gasPrice = null, ?string $gasLimit = null, ?string $networkFee = null, ?string $priorityFee = null, ?string $feeLevel = null, ?string $maxFee = null, ?bool $failOnLowFee = null, ?bool $forceSweep = null, ?string $note = null, ?bool $autoStaking = null, ?string $networkStaking = null, ?string $cpuStaking = null, ?TransactionOperation $operation = null, ?string $customerRefId = null, ?string $replaceTxByHash = null, ?string $externalTxId = null, ?array $extraParameters = [])
+    public function __construct(string $assetId, TransferPeerPath $source, DestinationTransferPeerPath $destination = null, TransactionRequestDestinationList $destinations = null, string $amount = null, bool $treatAsGrossAmount = false, ?string $fee = null, ?string $gasPrice = null, ?string $gasLimit = null, ?string $networkFee = null, ?string $priorityFee = null, ?FeeLevelEnums $feeLevel = null, ?string $maxFee = null, ?bool $failOnLowFee = null, ?bool $forceSweep = null, ?string $note = null, ?bool $autoStaking = null, ?string $networkStaking = null, ?string $cpuStaking = null, ?TransactionOperation $operation = null, ?string $customerRefId = null, ?string $replaceTxByHash = null, ?string $externalTxId = null, ?array $extraParameters = [])
     {
         $this->setAssetId($assetId);
         $this->setSource($source);
-        $this->setDestination($destination);
-        $this->setDestinations($destinations);
-        $this->setAmount($amount);
-        $this->setTreatAsGrossAmount($treatAsGrossAmount);
-        $this->setFee($fee);
-        $this->setGasPrice($gasPrice);
-        $this->setGasLimit($gasLimit);
-        $this->setNetworkFee($networkFee);
-        $this->setPriorityFee($priorityFee);
-        $this->setFeeLevel($feeLevel);
-        $this->setMaxFee($maxFee);
-        $this->setFailOnLowFee($failOnLowFee);
-        $this->setForceSweep($forceSweep);
-        $this->setNote($note);
-        $this->setAutoStaking($autoStaking);
-        $this->setNetworkStaking($networkStaking);
-        $this->setCpuStaking($cpuStaking);
-        $this->setOperation($operation);
-        $this->setCustomerRefId($customerRefId);
-        $this->setReplaceTxByHash($replaceTxByHash);
-        $this->setExternalTxId($externalTxId);
-        $this->setExtraParameters($extraParameters);
+        if ($destination) $this->setDestination($destination);
+        if ($destinations) $this->setDestinations($destinations);
+        if ($amount) $this->setAmount($amount);
+        if ($treatAsGrossAmount) $this->setTreatAsGrossAmount($treatAsGrossAmount);
+        if ($fee) $this->setFee($fee);
+        if ($gasPrice) $this->setGasPrice($gasPrice);
+        if ($gasLimit) $this->setGasLimit($gasLimit);
+        if ($networkFee) $this->setNetworkFee($networkFee);
+        if ($priorityFee) $this->setPriorityFee($priorityFee);
+        if ($feeLevel) $this->setFeeLevel($feeLevel);
+        if ($maxFee) $this->setMaxFee($maxFee);
+        if ($failOnLowFee) $this->setFailOnLowFee($failOnLowFee);
+        if ($forceSweep) $this->setForceSweep($forceSweep);
+        if ($note) $this->setNote($note);
+        if ($autoStaking) $this->setAutoStaking($autoStaking);
+        if ($networkStaking) $this->setNetworkStaking($networkStaking);
+        if ($cpuStaking) $this->setCpuStaking($cpuStaking);
+        if ($operation) $this->setOperation($operation);
+        if ($customerRefId) $this->setCustomerRefId($customerRefId);
+        if ($replaceTxByHash) $this->setReplaceTxByHash($replaceTxByHash);
+        if ($externalTxId) $this->setExternalTxId($externalTxId);
+        if ($extraParameters) $this->setExtraParameters($extraParameters);
     }
 
+    /**
+     * @return string
+     */
+    public function getAssetId(): string
+    {
+        return $this->assetId;
+    }
 
     /**
      * @param string $assetId
@@ -103,6 +111,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->assetId = $assetId;
         return $this;
+    }
+
+    /**
+     * @return TransferPeerPath
+     */
+    public function getSource(): TransferPeerPath
+    {
+        return $this->source;
     }
 
     /**
@@ -116,33 +132,65 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
-     * @param DestinationTransferPeerPath $destination
+     * @return DestinationTransferPeerPath|null
+     */
+    public function getDestination(): ?DestinationTransferPeerPath
+    {
+        return $this->destination;
+    }
+
+    /**
+     * @param DestinationTransferPeerPath|null $destination
      * @return CreateTransactionParameters
      */
-    public function setDestination(DestinationTransferPeerPath $destination): CreateTransactionParameters
+    public function setDestination(?DestinationTransferPeerPath $destination): CreateTransactionParameters
     {
         $this->destination = $destination;
         return $this;
     }
 
     /**
-     * @param TransactionRequestDestinationList $destinations
+     * @return TransactionRequestDestinationList|null
+     */
+    public function getDestinations(): ?TransactionRequestDestinationList
+    {
+        return $this->destinations;
+    }
+
+    /**
+     * @param TransactionRequestDestinationList|null $destinations
      * @return CreateTransactionParameters
      */
-    public function setDestinations(TransactionRequestDestinationList $destinations): CreateTransactionParameters
+    public function setDestinations(?TransactionRequestDestinationList $destinations): CreateTransactionParameters
     {
         $this->destinations = $destinations;
         return $this;
     }
 
     /**
-     * @param string $amount
+     * @return string|null
+     */
+    public function getAmount(): ?string
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @param string|null $amount
      * @return CreateTransactionParameters
      */
-    public function setAmount(string $amount): CreateTransactionParameters
+    public function setAmount(?string $amount): CreateTransactionParameters
     {
         $this->amount = $amount;
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTreatAsGrossAmount(): bool
+    {
+        return $this->treatAsGrossAmount;
     }
 
     /**
@@ -156,6 +204,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getFee(): ?string
+    {
+        return $this->fee;
+    }
+
+    /**
      * @param string|null $fee
      * @return CreateTransactionParameters
      */
@@ -163,6 +219,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->fee = $fee;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getGasPrice(): ?string
+    {
+        return $this->gasPrice;
     }
 
     /**
@@ -176,6 +240,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getGasLimit(): ?string
+    {
+        return $this->gasLimit;
+    }
+
+    /**
      * @param string|null $gasLimit
      * @return CreateTransactionParameters
      */
@@ -183,6 +255,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->gasLimit = $gasLimit;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNetworkFee(): ?string
+    {
+        return $this->networkFee;
     }
 
     /**
@@ -196,6 +276,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getPriorityFee(): ?string
+    {
+        return $this->priorityFee;
+    }
+
+    /**
      * @param string|null $priorityFee
      * @return CreateTransactionParameters
      */
@@ -206,13 +294,29 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
-     * @param string|null $feeLevel
+     * @return FeeLevelEnums|null
+     */
+    public function getFeeLevel(): ?FeeLevelEnums
+    {
+        return $this->feeLevel;
+    }
+
+    /**
+     * @param FeeLevelEnums|null $feeLevel
      * @return CreateTransactionParameters
      */
-    public function setFeeLevel(?string $feeLevel): CreateTransactionParameters
+    public function setFeeLevel(?FeeLevelEnums $feeLevel): CreateTransactionParameters
     {
         $this->feeLevel = $feeLevel;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMaxFee(): ?string
+    {
+        return $this->maxFee;
     }
 
     /**
@@ -226,6 +330,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return bool|null
+     */
+    public function getFailOnLowFee(): ?bool
+    {
+        return $this->failOnLowFee;
+    }
+
+    /**
      * @param bool|null $failOnLowFee
      * @return CreateTransactionParameters
      */
@@ -233,6 +345,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->failOnLowFee = $failOnLowFee;
         return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getForceSweep(): ?bool
+    {
+        return $this->forceSweep;
     }
 
     /**
@@ -246,6 +366,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    /**
      * @param string|null $note
      * @return CreateTransactionParameters
      */
@@ -253,6 +381,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->note = $note;
         return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getAutoStaking(): ?bool
+    {
+        return $this->autoStaking;
     }
 
     /**
@@ -266,6 +402,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getNetworkStaking(): ?string
+    {
+        return $this->networkStaking;
+    }
+
+    /**
      * @param string|null $networkStaking
      * @return CreateTransactionParameters
      */
@@ -273,6 +417,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->networkStaking = $networkStaking;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCpuStaking(): ?string
+    {
+        return $this->cpuStaking;
     }
 
     /**
@@ -286,6 +438,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return TransactionOperation|null
+     */
+    public function getOperation(): ?TransactionOperation
+    {
+        return $this->operation;
+    }
+
+    /**
      * @param TransactionOperation|null $operation
      * @return CreateTransactionParameters
      */
@@ -293,6 +453,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->operation = $operation;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCustomerRefId(): ?string
+    {
+        return $this->customerRefId;
     }
 
     /**
@@ -306,6 +474,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getReplaceTxByHash(): ?string
+    {
+        return $this->replaceTxByHash;
+    }
+
+    /**
      * @param string|null $replaceTxByHash
      * @return CreateTransactionParameters
      */
@@ -313,6 +489,14 @@ class CreateTransactionParameters implements ToArrayAccess
     {
         $this->replaceTxByHash = $replaceTxByHash;
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getExternalTxId(): ?string
+    {
+        return $this->externalTxId;
     }
 
     /**
@@ -326,6 +510,14 @@ class CreateTransactionParameters implements ToArrayAccess
     }
 
     /**
+     * @return array|null
+     */
+    public function getExtraParameters(): ?array
+    {
+        return $this->extraParameters;
+    }
+
+    /**
      * @param array|null $extraParameters
      * @return CreateTransactionParameters
      */
@@ -334,197 +526,4 @@ class CreateTransactionParameters implements ToArrayAccess
         $this->extraParameters = $extraParameters;
         return $this;
     }
-
-    /**
-     * @return string
-     */
-    public function getAssetId(): string
-    {
-        return $this->assetId;
-    }
-
-    /**
-     * @return TransferPeerPath
-     */
-    public function getSource(): TransferPeerPath
-    {
-        return $this->source;
-    }
-
-    /**
-     * @return DestinationTransferPeerPath
-     */
-    public function getDestination(): DestinationTransferPeerPath
-    {
-        return $this->destination;
-    }
-
-    /**
-     * @return TransactionRequestDestinationList
-     */
-    public function getDestinations(): TransactionRequestDestinationList
-    {
-        return $this->destinations;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAmount(): string
-    {
-        return $this->amount;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isTreatAsGrossAmount(): bool
-    {
-        return $this->treatAsGrossAmount;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getFee(): ?string
-    {
-        return $this->fee;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getGasPrice(): ?string
-    {
-        return $this->gasPrice;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getGasLimit(): ?string
-    {
-        return $this->gasLimit;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNetworkFee(): ?string
-    {
-        return $this->networkFee;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPriorityFee(): ?string
-    {
-        return $this->priorityFee;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getFeeLevel(): ?string
-    {
-        return $this->feeLevel;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getMaxFee(): ?string
-    {
-        return $this->maxFee;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getFailOnLowFee(): ?bool
-    {
-        return $this->failOnLowFee;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getForceSweep(): ?bool
-    {
-        return $this->forceSweep;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNote(): ?string
-    {
-        return $this->note;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getAutoStaking(): ?bool
-    {
-        return $this->autoStaking;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNetworkStaking(): ?string
-    {
-        return $this->networkStaking;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCpuStaking(): ?string
-    {
-        return $this->cpuStaking;
-    }
-
-    /**
-     * @return TransactionOperationEnums|null
-     */
-    public function getOperation()
-    {
-        return $this->operation;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCustomerRefId(): ?string
-    {
-        return $this->customerRefId;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getReplaceTxByHash(): ?string
-    {
-        return $this->replaceTxByHash;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getExternalTxId(): ?string
-    {
-        return $this->externalTxId;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getExtraParameters(): ?array
-    {
-        return $this->extraParameters;
-    }
-
 }
